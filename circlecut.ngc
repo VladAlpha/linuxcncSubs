@@ -1,0 +1,35 @@
+(cuts a single circular pass with the od requested)
+(tool must be preloaded)
+
+
+o<circlecut> sub
+  (helical hole milling, load tool and set feed first, then use like so:)
+  (1[x pos] 2[y pos] 3[safety height] 4[hole depth] 5[hole dia] 6[doc as percent])
+
+#<x_pos> = #1
+#<y_pos> = #2
+#<z_safe> = #3 (=.05)
+#<depth> = #4 (=-0.1)
+#<diam> = #5
+#<doc_percent> = #6	(=30)
+
+#<tool_diam> = #5410 (loaded tool diam)
+#<doc> = [100*#<tool_diam>/#<doc>]
+
+#<z_incremental> =[#<z_safe> - #<doc>] (#<z_incremental>  is current depth step)
+g0 z#<z_safe>
+(start above and right so we make a convex corner for entry to the ccw arcs)
+g0 x[#<x_pos> + #<doc>] y[#<y_pos> + [#<diam> / 2]] 
+g41 g0 x#<x_pos> y[#<y_pos> + [#<diam> / 2]]
+o101 while [#<z_incremental>  GT #<depth>]
+	(down toward the specified depth a bit at a time)
+	g3 x#<x_pos> y[#<y_pos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<z_incremental> 
+	#<z_incremental> =[#<z_incremental>  - #<doc>]
+o101 endwhile
+(down to the actual depth)
+g3 x#<x_pos> y[#<y_pos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<depth>
+(full circle at the actual depth)
+g3 x#<x_pos> y[#<y_pos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]]
+g0 z#<z_safe>
+g40
+o<circlecut> endsub
