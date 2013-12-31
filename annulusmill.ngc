@@ -1,0 +1,72 @@
+(Vlad's annulus milling subroutine for ngcgui)
+(takes a position and a few parameters to mill an annulus)
+(tool number and feedrates should be defined prior to calling)
+
+(arguments: 1[x center] 2[y center] 3[ID] 4[OD] 5[depth] 6[start of cut height])
+( 7[z safe] [depth of cut per pass] [stepover percent])
+
+o<annulusmill> sub
+
+#<x> = #1
+#<y> = #2
+#<id> = #3
+#<od> = #4
+#<z_end> = #5 
+#<zstart> = #6 (=.05: height to ramp in from, above material sugg)
+#<z_safe> = #7 (=.1)
+#<doc_p> = #8 (=25 : percent depth per pass)
+#<sop> = #9 (=30 : percent stepover)
+
+#<tool_diam> = #5410
+#<doc> = [#<tool_diam>*#<doc_p>/100]
+#<step> = [#<tool_diam>*#<sop>/100]
+#<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
+(if depth can be done in one pass, reset z_curr)
+    o10 if [#<z_curr> lt #<z_end>]
+    #<z_curr> = #<z_end>
+    o10 endif
+
+G00 Z#<z_safe>
+G00 X#<x> Y#<y>     (go to center)
+G92 X0 Y0           (set temp coordinate around center)
+G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
+G41 (cut starts inside, left comp CW cutter and CW 02 arc)
+
+o100 while [#<z_curr> ge #<z_end>] (loop on down untill intended Z is z finish)
+    #<rad> = [#<id>/2+#<step>]              (convenient dim holder)
+
+	o<passes> if [[#<od> - #<id>] eq [2*#<tool_diam>]] (exactly one pass)
+		G40 (turn back off cutter comp)
+        G00 X-[[#<od>/4]+[#<id>/4]] Z#<zstart> (lower to starting level and 9 oclock)
+		G02 I[[#<od>/4]+[#<id>/4]] Z#<z_curr> P1
+    o<passes> elseif [[#<od>-#<id>] gt [2*[#<tool_diam>+#<step>]]] (multipass)
+        G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
+        G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
+        G02 I#<rad>                                  (clean cut)
+        G02 X#<rad> Y[#<id>/2] I#<rad>    (arc into inner surface)
+        G02 J-[#<id>/2] P1                              (clean inner surface)
+        #<rad>= [#<rad>+#<tool_diam>]
+        G01 X0 Y#<rad>                               (moves to fresh surface)
+
+        o<expandingbulk> while [#<rad> lt [#<od>/2]]    (keep pushing out)
+            #<rad> = #<rad>+#<step>
+            G03 X-#<rad> Y-#<rad> J-#<rad>              (arc out to 9)
+            G03 X#<rad> Y#<rad> I#<rad>                 (3/4 circle to 12)
+        o<expandingbulk> endwhile
+        G03 X-#<rad> Y-#<rad> J-#<rad>                  (finsh last cut)
+
+    o<passes> else (two passes)
+        #<rad> = [#<id>/2]
+        G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
+        G02 X0 I#<rad> Z#<z_curr> P1                 (ramp down in and cut to 12)
+        G02 J-#<rad> P2                              (clean cut end at 9)
+        G03    (reverse dir, arc to 6)
+    o<passes> endif
+    #<zstart> = #<z_curr>
+	#<z_curr> = [#<z_curr>-#<doc>]
+o100 endwhile
+
+G00 Z#<z_safe>
+G00 X#<x> Y#<y>
+G92.1 G40
+<annulusmill> endsub
