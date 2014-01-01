@@ -1,0 +1,76 @@
+(Vlad's annulus milling subroutine for ngcgui)
+(takes a position and a few parameters to mill an annulus)
+(tool number and feedrates should be defined prior to calling)
+
+(arguments: 1[x center] 2[y center] 3[ID] 4[OD] 5[depth] 6[start of cut height])
+( 7[z safe] [depth of cut per pass] [stepover percent] [feedrate])
+
+
+F23
+
+#1 =  0
+#2 = 0
+#3 = .3
+#4 = .5
+#5  = -.2
+#6  = .05
+#7  = .1
+#8  = 25
+#9  = 30
+#10 = 24
+
+#<x> = #1       (=0)
+#<y> = #2       (=0)
+#<id> = #3
+#<od> = #4
+#<z_end> = #5 
+#<zstart> = #6 (=.05: height to ramp in from, above material sugg)
+#<z_safe> = #7 (=.1)
+#<doc_p> = #8 (=25 : percent depth per pass)
+#<sop> = #9 (=30 : percent stepover)
+#<feed> = #10 (=24)
+
+#<tool_diam> = #5410
+#<doc> = [#<tool_diam>*#<doc_p>/100]
+#<step> = [#<tool_diam>*#<sop>/100]
+#<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
+(if depth can be done in one pass, reset z_curr)
+    o10 if [#<z_curr> lt #<z_end>]
+    #<z_curr> = #<z_end>
+    o10 endif
+    
+F#<feed>            (set feedrate)
+G00 Z#<z_safe>
+G00 X#<x> Y#<y>     (go to center)
+G92 X0 Y0           (set temp coordinate around center)
+G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
+G41 (cut starts inside, left comp CW cutter and CW 02 arc)
+
+#<rad> = [#<id>/2+#<step>]              (convenient dim holder)
+
+(o<passes> sub)
+    G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
+    G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
+    G02 I#<rad>                                  (clean cut)
+    G02 X0 Y[#<id>/2] I#<rad> J[[#<id>-#<rad>]/2]    (arc into inner surface)
+    G02 J-[#<id>/2] P1                              (clean inner surface)
+    #<rad>= [#<rad>+#<tool_diam>]
+    G01 X0 Y#<rad>                               (moves to fresh surface)
+
+    o<expandingbulk> while [#<rad> lt [#<od>/2]]    (keep pushing out)
+        #<rad> = #<rad>+#<step>
+        G03 X-#<rad> Y-#<rad> J-#<rad>              (arc out to 9)
+        G03 X#<rad> Y#<rad> I#<rad>                 (3/4 circle to 12)
+    o<expandingbulk> endwhile
+    G03 X-#<rad> Y-#<rad> J-#<rad>                  (finsh last cut)
+
+(o<passes> endsub)
+
+#<zstart> = #<z_curr>
+#<z_curr> = [#<z_curr>-#<doc>]
+
+G00 Z#<z_safe>
+G00 X#<x> Y#<y>
+G92.1 G40
+
+m2

@@ -3,12 +3,12 @@
 (tool number and feedrates should be defined prior to calling)
 
 (arguments: 1[x center] 2[y center] 3[ID] 4[OD] 5[depth] 6[start of cut height])
-( 7[z safe] [depth of cut per pass] [stepover percent] [feedrate])
+( 7[z safe] [depth of cut per pass] [stepover percent])
 
 o<annulusmill> sub
 
-#<x> = #1       (=0)
-#<y> = #2       (=0)
+#<x> = #1
+#<y> = #2
 #<id> = #3
 #<od> = #4
 #<z_end> = #5 
@@ -16,7 +16,6 @@ o<annulusmill> sub
 #<z_safe> = #7 (=.1)
 #<doc_p> = #8 (=25 : percent depth per pass)
 #<sop> = #9 (=30 : percent stepover)
-#<feed> = #10 (=24)
 
 #<tool_diam> = #5410
 #<doc> = [#<tool_diam>*#<doc_p>/100]
@@ -26,7 +25,7 @@ o<annulusmill> sub
     o10 if [#<z_curr> lt #<z_end>]
     #<z_curr> = #<z_end>
     o10 endif
-F#<feed>            (set feedrate)
+
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>     (go to center)
 G92 X0 Y0           (set temp coordinate around center)
@@ -70,4 +69,12 @@ o100 endwhile
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>
 G92.1 G40
-o<annulusmill> endsub
+<annulusmill> endsub
+
+(test of annulus)
+
+g90
+
+o<annulusmill> call [1] [2] [.4] [0.6] [-.2] [0.05] [.2] [40] [50]
+
+M30
