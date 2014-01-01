@@ -16,7 +16,7 @@ F23
 #6  = .05
 #7  = .1
 #8  = 25
-#9  = 30
+#9  = 50
 #10 = 24
 
 #<x> = #1       (=0)
@@ -48,10 +48,8 @@ F#<feed>            (set feedrate)
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>     (go to center)
 G92 X0 Y0           (set temp coordinate around center)
-g4 p2
 G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
 G41 (cut starts inside, left comp CW cutter and CW 02 arc)
-g4 p2
 
 #<rad> = [#<id>/2+#<step>]              (convenient dim holder)
 
@@ -70,7 +68,7 @@ g4 p2
         G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
         G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
     o<expandingbulk> endwhile
-    (G03 X-#<rad> Y-#<rad> J-#<rad>                  finsh last cut)
+    G03 X-#<rad> Y0 J-#<rad>                  (finsh last cut)
 
 (o<passes> endsub)
 
