@@ -11,12 +11,12 @@ F23
 #1 =  0
 #2 = 0
 #3 = .9
-#4 = 1.2
+#4 = 2
 #5  = -.2
 #6  = .05
 #7  = .1
 #8  = 25
-#9  = 20
+#9  = 30
 #10 = 24
 
 #<x> = #1       (=0)
@@ -38,13 +38,20 @@ F23
     o10 if [#<z_curr> lt #<z_end>]
     #<z_curr> = #<z_end>
     o10 endif
+    o20 if [#<tool_diam> eq 0]
+    (msg, YOU MUST LOAD A NON 0 TOOL PRIOR TO USING ANNULUS)
+    m2
+    o20 endif
     
+G40
 F#<feed>            (set feedrate)
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>     (go to center)
 G92 X0 Y0           (set temp coordinate around center)
+g4 p2
 G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
 G41 (cut starts inside, left comp CW cutter and CW 02 arc)
+g4 p2
 
 #<rad> = [#<id>/2+#<step>]              (convenient dim holder)
 
@@ -60,7 +67,7 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
     o<expandingbulk> while [#<rad> lt [#<od>/2]]    (keep pushing out)
         #<startRad> = #<rad>        (save old value to shorten eqs)
         #<rad> = [#<rad>+#<step>]
-        G03 X-#<rad> Y0 I[[[#<startRad>]*[#<startRad>]-#<rad>*#<rad>]/[2*[#<startRad>]]] J-[#<startRad>]  (arc out to 9)
+        G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
         G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
     o<expandingbulk> endwhile
     (G03 X-#<rad> Y-#<rad> J-#<rad>                  finsh last cut)
