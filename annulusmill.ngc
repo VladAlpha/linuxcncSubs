@@ -23,6 +23,16 @@ o<annulusmill> sub
 #<step> = [#<tool_diam>*#<sop>/100]
 #<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
 #<finish> = [#<tool_diam>*#<finish>/100]
+
+(set first rad, note rad is always inteded radius, not current)
+    o<initialrad> if [[#<od>-#<id>] gt [2*[#<tool_diam>-#<step>]]] (mooltipass needed)
+    #<rad> = [#<id>/2+#<finish>]            (convenient dim holder for intended pos)
+    o<initialrad> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
+    #<rad> = [#<id>/2]
+    o<initialrad> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[#<tool_diam>-#<step>]]] (two pass)
+    #<rad> = [#<id>/2]
+o<initialrad> endif
+
 (if depth can be done in one pass, reset z_curr)
     o10 if [#<z_curr> lt #<z_end>]
     #<z_curr> = #<z_end>
@@ -32,12 +42,12 @@ o<annulusmill> sub
     (msg, YOU MUST LOAD A NON 0 TOOL PRIOR TO USING ANNULUS)
     m2
     o20 endif
-    o21 if [#<tool_diam> gt [[#<od>-#<id>]/2]]
-    (err, TOOL TOO LARGE FOR SLOT)
+    o21 if [#<id> ge #<od>]
+    (msg, YOU ARE NOT ESCHER, CHECK ANNULUS ID AND OD VALUES FOR INVERSION)
     m2
     o21 endif
-    o22 if [#<id> ge #<od>]
-    (err, YOU ARE NOT ESCHER, CHECK ID AND OD VALUES FOR INVERSION)
+    o22 if [#<tool_diam> gt [[#<od>-#<id>]/2]]
+    (msg, TOOL TOO LARGE FOR ANNULUS)
     m2
     o22 endif
 
@@ -49,12 +59,10 @@ G92 X0 Y0           (set temp coordinate around center)
 G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
 G41 (cut starts inside, left comp CW cutter and CW 02 arc)
 
-#<rad> = [#<id>/2+#<finish>]              (convenient dim holder)
-                                        (start finish dist from final ID)
 G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
 
 o<layers> while [#<z_curr> ge #<z_end>]         (if not too deep)
-(o<case> if [[#<od>-#<id>] gt [2*[#<tool_diam>-#<step>]]]) (mooltipass needed)
+o<case> if [[#<od>-#<id>] gt [2*[#<tool_diam>-#<step>]]] (mooltipass needed)
     G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
     G02 I#<rad>                                  (clean cut)
     G02 X0 Y[#<id>/2] I#<rad> J[[#<id>*#<id>/4-#<rad>*#<rad>]/#<id>]    (arc into inner surface)
@@ -86,10 +94,15 @@ o<layers> while [#<z_curr> ge #<z_end>]         (if not too deep)
     #<rad> = [#<id>/2+#<finish>]              (reset goal rad)
     G02 X-#<rad> Y0 I-[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[2*#<rad>]] J#<startRad>  (go to inner start pos, 6>9)
 
-(o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]]) (one pass)
-    (G00 X[-#<id>/2] Y0) (9, tiny shift from local firsttime, no move rest)
-    (G02 I[#<id>/2] Z#<z_curr> P1) (circle plunge)
-(o<case> endif)
+o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
+    G02 I#<rad> Z#<z_curr> P1   (circle plunge)
+    G02 I#<rad>                 (finish bottom)
+o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (two pass)
+    G02 I#<rad> Z#<z_curr> P1   (circle plunge)
+    G02 I#<rad> P1              (finish bottom)
+    G01 X[-#<od>/2]             (move out)
+    G03 X0 Y[-#<od>/2] I[#<od>/2] P2
+o<case> endif
 
     o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
     #<z_curr> = [#<z_curr>-#<doc>]
