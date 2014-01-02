@@ -25,11 +25,11 @@ o<annulusmill> sub
 #<finish> = [#<tool_diam>*#<finish>/100]
 
 (set first rad, note rad is always inteded radius, not current)
-    o<initialrad> if [[#<od>-#<id>] gt [2*[#<tool_diam>-#<step>]]] (mooltipass needed)
+    o<initialrad> if [[#<od>-#<id>] gt [2*[2*#<tool_diam>-#<step>]]] (mooltipass needed)
     #<rad> = [#<id>/2+#<finish>]            (convenient dim holder for intended pos)
     o<initialrad> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
     #<rad> = [#<id>/2]
-    o<initialrad> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[#<tool_diam>-#<step>]]] (two pass)
+    o<initialrad> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<tool_diam>-#<step>]]] (two pass)
     #<rad> = [#<id>/2]
 o<initialrad> endif
 
@@ -62,7 +62,7 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
 G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
 
 o<layers> while [#<z_curr> ge #<z_end>]         (if not too deep)
-o<case> if [[#<od>-#<id>] gt [2*[#<tool_diam>-#<step>]]] (mooltipass needed)
+o<case> if [[#<od>-#<id>] gt [2*[2*#<tool_diam>-#<step>]]] (mooltipass needed)
     G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
     G02 I#<rad>                                  (clean cut)
     G02 X0 Y[#<id>/2] I#<rad> J[[#<id>*#<id>/4-#<rad>*#<rad>]/#<id>]    (arc into inner surface)
@@ -97,7 +97,7 @@ o<case> if [[#<od>-#<id>] gt [2*[#<tool_diam>-#<step>]]] (mooltipass needed)
 o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
     G02 I#<rad> Z#<z_curr> P1   (circle plunge)
     G02 I#<rad>                 (finish bottom)
-o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (two pass)
+o<case> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<tool_diam>-#<step>]]] (two pass)
     G02 I#<rad> Z#<z_curr> P1   (circle plunge)
     G02 I#<rad> P1              (finish bottom)
     G01 X[-#<od>/2]             (move out)
