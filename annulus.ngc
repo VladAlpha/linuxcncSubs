@@ -86,8 +86,10 @@ o<passes> while [#<z_curr> gt #<z_end>]         (if not too deep)
         o<exitexpanding> endif
     o<expandingbulk> endwhile
 
+    #<startRad>=#<rad>
     #<rad> = [#<id>/2+#<finish>]              (reset goal rad)
-    G00 X-#<rad> Y0                         (go to inner start pos)
+    G02 X-#<rad> Y0 I-[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[2*#<rad>]] J#<startRad>  (go to inner start pos, 6>9)
+
     o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
     #<z_curr> = [#<z_curr>-#<doc>]
     o<zcontrol> elseif [#<z_curr> eq #<z_end>]          (if this cut just finished)
