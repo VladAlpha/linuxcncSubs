@@ -26,6 +26,7 @@ o<annulusmill> sub
     o10 if [#<z_curr> lt #<z_end>]
     #<z_curr> = #<z_end>
     o10 endif
+    
 F#<feed>            (set feedrate)
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>     (go to center)

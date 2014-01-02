@@ -18,7 +18,7 @@ F23
 #8  = 25
 #9  = 70
 #10 = 24
-#11 = [#5410*#9/100]
+#11 = 20
 
 #<x> = #1       (=0)
 #<y> = #2       (=0)
@@ -36,6 +36,7 @@ F23
 #<doc> = [#<tool_diam>*#<doc_p>/100]
 #<step> = [#<tool_diam>*#<sop>/100]
 #<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
+#<finish> = [#<tool_diam>*#<finish>/100]
 (if depth can be done in one pass, reset z_curr)
     o10 if [#<z_curr> lt #<z_end>]
     #<z_curr> = #<z_end>
@@ -55,8 +56,9 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
 
 #<rad> = [#<id>/2+#<finish>]              (convenient dim holder)
                                         (start finish dist from final ID)
-(o<passes> sub)
-    G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
+G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
+
+o<passes> while [#<z_curr> gt #<z_end>]         (if not too deep)
     G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
     G02 I#<rad>                                  (clean cut)
     G02 X0 Y[#<id>/2] I#<rad> J[[#<id>*#<id>/4-#<rad>*#<rad>]/#<id>]    (arc into inner surface)
@@ -77,17 +79,23 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
         #<rad> = [[#<od>/2]]                        (set to final value)
         G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
         G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
-        G03 X-#<rad> Y0 J-#<rad>                    (finish cut)
+        G03 X0 Y-#<rad> J-#<rad>                    (finish cut)
         o<exitexpanding> else (next cut would have landed in finish region, so snap to)
         #<startRad> = #<rad>                        (save it)
         #<rad> = [[#<od>/2]-#<finish>]              (set to final rough value)
         o<exitexpanding> endif
     o<expandingbulk> endwhile
-    
-(o<passes> endsub)
 
-#<zstart> = #<z_curr>
-#<z_curr> = [#<z_curr>-#<doc>]
+    #<rad> = [#<id>/2+#<finish>]              (reset goal rad)
+    G00 X-#<rad> Y0                         (go to inner start pos)
+    o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
+    #<z_curr> = [#<z_curr>-#<doc>]
+    o<zcontrol> elseif [#<z_curr> eq #<z_end>]          (if this cut just finished)
+    #<z_curr> = [#<z_end>-1]    (set excessive to quit)
+    o<zcontrol> elseif [[#<z_curr>-#<doc>] le #<z_end>]   (if next cut finishes or is excessive, force finish)
+    #<z_curr> = #<z_end>
+    o<zcontrol> endif
+o<passes> endwhile
 
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>
