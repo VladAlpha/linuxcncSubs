@@ -5,28 +5,34 @@
 (arguments: 1[x center] 2[y center] 3[ID] 4[OD] 5[depth] 6[start of cut height])
 ( 7[z safe] [depth of cut per pass] [stepover percent] [feedrate])
 
-o<annulusmill> sub
 
 #<x> = #1       (=0)
 #<y> = #2       (=0)
 #<id> = #3
 #<od> = #4
-#<z_end> = #5 
+#<z_end> = #5   (=-1: Bottom Z height) 
 #<zstart> = #6 (=.05: height to ramp in from, above material sugg)
 #<z_safe> = #7 (=.1)
 #<doc_p> = #8 (=25 : percent depth per pass)
 #<sop> = #9 (=30 : percent stepover)
 #<feed> = #10 (=24)
+#<finish> = #11 (=[#5410*#<sop>/100] : default to step size)
 
 #<tool_diam> = #5410
 #<doc> = [#<tool_diam>*#<doc_p>/100]
 #<step> = [#<tool_diam>*#<sop>/100]
 #<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
+#<finish> = [#<tool_diam>*#<finish>/100]
 (if depth can be done in one pass, reset z_curr)
     o10 if [#<z_curr> lt #<z_end>]
     #<z_curr> = #<z_end>
     o10 endif
+    o20 if [#<tool_diam> eq 0]
+    (msg, YOU MUST LOAD A NON 0 TOOL PRIOR TO USING ANNULUS)
+    m2
+    o20 endif
     
+G40
 F#<feed>            (set feedrate)
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>     (go to center)
@@ -34,41 +40,51 @@ G92 X0 Y0           (set temp coordinate around center)
 G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
 G41 (cut starts inside, left comp CW cutter and CW 02 arc)
 
-o100 while [#<z_curr> ge #<z_end>] (loop on down untill intended Z is z finish)
-    #<rad> = [#<id>/2+#<step>]              (convenient dim holder)
+#<rad> = [#<id>/2+#<finish>]              (convenient dim holder)
+                                        (start finish dist from final ID)
+G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
 
-	o<passes> if [[#<od> - #<id>] eq [2*#<tool_diam>]] (exactly one pass)
-		G40 (turn back off cutter comp)
-        G00 X-[[#<od>/4]+[#<id>/4]] Z#<zstart> (lower to starting level and 9 oclock)
-		G02 I[[#<od>/4]+[#<id>/4]] Z#<z_curr> P1
-    o<passes> elseif [[#<od>-#<id>] gt [2*[#<tool_diam>+#<step>]]] (multipass)
-        G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
-        G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
-        G02 I#<rad>                                  (clean cut)
-        G02 X#<rad> Y[#<id>/2] I#<rad>    (arc into inner surface)
-        G02 J-[#<id>/2] P1                              (clean inner surface)
-        #<rad>= [#<rad>+#<tool_diam>]
-        G01 X0 Y#<rad>                               (moves to fresh surface)
+o<passes> while [#<z_curr> gt #<z_end>]         (if not too deep)
+    G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
+    G02 I#<rad>                                  (clean cut)
+    G02 X0 Y[#<id>/2] I#<rad> J[[#<id>*#<id>/4-#<rad>*#<rad>]/#<id>]    (arc into inner surface)
+    G02 J-[#<id>/2] P1                              (clean inner surface)
+    #<rad>= [#<rad>+#<tool_diam>]                   (sets rad to uncut wall dim)
+    G00 X0 Y#<rad>                                  (moves to fresh surface 12)
+    #<startRad> = #<rad>                            (save old value to shorten eqs)
+    #<rad> = [#<rad>+#<step>]                       (set rad to next pass)
+    
+    o<expandingbulk> while [#<rad> le [[#<od>/2]-#<finish>]]    (keep pushing out, evals to final not cur dim)
+        G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
+        G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
+        o<exitexpanding> if [[#<rad>+#<step>] lt [[#<od>/2]-#<finish>]] (check if next cut is <=od-finish, if so increment)
+        #<startRad> = #<rad>                    (save old value to shorten eqs)
+        #<rad> = [#<rad>+#<step>]               (keeps change nested but avoids extra final)
+        o<exitexpanding> elseif [#<rad> eq [[#<od>/2]-#<finish>]]  (last rough was done, finish him!)
+        #<startRad> = #<rad>                        (save it)
+        #<rad> = [[#<od>/2]]                        (set to final value)
+        G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
+        G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
+        G03 X0 Y-#<rad> J-#<rad>                    (finish cut)
+        o<exitexpanding> else (next cut would have landed in finish region, so snap to)
+        #<startRad> = #<rad>                        (save it)
+        #<rad> = [[#<od>/2]-#<finish>]              (set to final rough value)
+        o<exitexpanding> endif
+    o<expandingbulk> endwhile
 
-        o<expandingbulk> while [#<rad> lt [#<od>/2]]    (keep pushing out)
-            #<rad> = #<rad>+#<step>
-            G03 X-#<rad> Y-#<rad> J-#<rad>              (arc out to 9)
-            G03 X#<rad> Y#<rad> I#<rad>                 (3/4 circle to 12)
-        o<expandingbulk> endwhile
-        G03 X-#<rad> Y-#<rad> J-#<rad>                  (finsh last cut)
+    #<startRad>=#<rad>
+    #<rad> = [#<id>/2+#<finish>]              (reset goal rad)
+    G02 X-#<rad> Y0 I-[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[2*#<rad>]] J#<startRad>  (go to inner start pos, 6>9)
 
-    o<passes> else (two passes)
-        #<rad> = [#<id>/2]
-        G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
-        G02 X0 I#<rad> Z#<z_curr> P1                 (ramp down in and cut to 12)
-        G02 J-#<rad> P2                              (clean cut end at 9)
-        G03    (reverse dir, arc to 6)
-    o<passes> endif
-    #<zstart> = #<z_curr>
-	#<z_curr> = [#<z_curr>-#<doc>]
-o100 endwhile
+    o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
+    #<z_curr> = [#<z_curr>-#<doc>]
+    o<zcontrol> elseif [#<z_curr> eq #<z_end>]          (if this cut just finished)
+    #<z_curr> = [#<z_end>-1]    (set excessive to quit)
+    o<zcontrol> elseif [[#<z_curr>-#<doc>] le #<z_end>]   (if next cut finishes or is excessive, force finish)
+    #<z_curr> = #<z_end>
+    o<zcontrol> endif
+o<passes> endwhile
 
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>
 G92.1 G40
-o<annulusmill> endsub
