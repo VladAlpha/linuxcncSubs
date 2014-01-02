@@ -5,7 +5,7 @@
 (arguments: 1[x center] 2[y center] 3[ID] 4[OD] 5[depth] 6[start of cut height])
 ( 7[z safe] [depth of cut per pass] [stepover percent] [feedrate])
 
-
+o<annulusmill> sub
 #<x> = #1       (=0)
 #<y> = #2       (=0)
 #<id> = #3
@@ -16,7 +16,7 @@
 #<doc_p> = #8 (=25 : percent depth per pass)
 #<sop> = #9 (=30 : percent stepover)
 #<feed> = #10 (=24)
-#<finish> = #11 (=[#5410*#<sop>/100] : default to step size)
+#<finish> = #11 (=4: finish stepover, .010 for .25 tool)
 
 #<tool_diam> = #5410
 #<doc> = [#<tool_diam>*#<doc_p>/100]
@@ -88,3 +88,4 @@ o<passes> endwhile
 G00 Z#<z_safe>
 G00 X#<x> Y#<y>
 G92.1 G40
+o<annulusmill> endsub
