@@ -69,18 +69,21 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
     o<expandingbulk> while [#<rad> le [[#<od>/2]-#<finish>]]    (keep pushing out, evals to final not cur dim)
         G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
         G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
-        o<exitexpanding> if [[#<rad>+#<step>] le [[#<od>/2]-#<finish>]] (check if next cut is <=od-finish, if so increment)
+        o<exitexpanding> if [[#<rad>+#<step>] lt [[#<od>/2]-#<finish>]] (check if next cut is <=od-finish, if so increment)
         #<startRad> = #<rad>                    (save old value to shorten eqs)
         #<rad> = [#<rad>+#<step>]               (keeps change nested but avoids extra final)
+        o<exitexpanding> elseif [#<rad> eq [[#<od>/2]-#<finish>]]  (last rough was done, finish him!)
+        #<startRad> = #<rad>                        (save it)
+        #<rad> = [[#<od>/2]]                        (set to final value)
+        G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
+        G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
+        G03 X-#<rad> Y0 J-#<rad>                    (finish cut)
+        o<exitexpanding> else (next cut would have landed in finish region, so snap to)
+        #<startRad> = #<rad>                        (save it)
+        #<rad> = [[#<od>/2]-#<finish>]              (set to final rough value)
         o<exitexpanding> endif
     o<expandingbulk> endwhile
-    G03 X-#<rad> Y0 J-#<rad>                    (finsh last cut)
-
-    #<rad> = [#<od>/2]
-    G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9 final dim)
-    G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
-    G03 X-#<rad> Y0 J-#<rad>                  (finsh last cut)
-
+    
 (o<passes> endsub)
 
 #<zstart> = #<z_curr>
