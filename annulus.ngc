@@ -65,7 +65,7 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
     G00 X0 Y#<rad>                                  (moves to fresh surface 12)
     #<startRad> = #<rad>                            (save old value to shorten eqs)
     #<rad> = [#<rad>+#<step>]                       (set rad to next pass)
-
+    
     o<expandingbulk> while [#<rad> le [[#<od>/2]-#<finish>]]    (keep pushing out, evals to final not cur dim)
         G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
         G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
