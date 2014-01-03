@@ -14,17 +14,16 @@ o<outsidebox> sub
 #<doc> = #8		(=40: % Tool Diam Cut Depth)
 #<feed> = #9 	(Feedrate)
 
+#<xend> = [#<xstart>+#<xvect>]
+#<yend> = [#<ystart>+#<yvect>]
 #<doc> = [#5410*#<doc>/100]
 #<zcuts> = [fix[[#<zstart>-#<zend>]/#<doc>]]
 F#<feed>
 
-
-G92.1
 G40
 G00 Z#<zsafe>
 G00 X#<xstart> y#<ystart>
-G92 X0 Y0
-G00 X [-#5410]
+G00 X [#<xstart>-#5410]
 
 G41
 
@@ -33,18 +32,17 @@ G01 Z#<zstart> Y0 X0
 
 o<rampdown> repeat [#<zcuts>]
 #<zgo> =[ #<zgo>-#<doc>]
-G01 Y#<yvect> Z[#<zgo>]
-G01 X#<xvect>
-G01 Y[0]
-G01 X[0]
+G01 Y#<yend> Z[#<zgo>]
+G01 X#<xend>
+G01 Y[#<ystart>]
+G01 X[#<xstart>]
 #<zstart> =[ #<zgo>]
 o<rampdown> endrepeat
 
-G01 Y#<yvect>
-G01 X#5410
+G01 Y#<yend>
+G01 X[#<xstart>+#5410]
 G00 Z#<zsafe>
 
 G40
-G92.1
 
 o<outsidebox> endsub
