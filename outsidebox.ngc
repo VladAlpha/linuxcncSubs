@@ -22,13 +22,12 @@ F#<feed>
 
 G40
 G00 Z#<zsafe>
-G00 X#<xstart> y#<ystart>
-G00 X [#<xstart>-#5410]
+G00 X[#<xstart>-#5410] y#<ystart>
 
 G41
 
 #<zgo> = #<zstart>
-G01 Z#<zstart> Y0 X0
+G01 Z#<zstart> X#<xstart>
 
 o<rampdown> repeat [#<zcuts>]
 #<zgo> =[ #<zgo>-#<doc>]
