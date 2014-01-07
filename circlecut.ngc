@@ -1,35 +1,34 @@
-(cuts a single circular pass with the od requested)
-(tool must be preloaded)
-
-
 o<circlecut> sub
   (helical hole milling, load tool and set feed first, then use like so:)
-  (1[x pos] 2[y pos] 3[safety height] 4[hole depth] 5[hole dia] 6[doc as percent])
+  (o100 call 1[x pos] 2[y pos] 3[safety height] 4[hole depth] 5[hole dia])
+  (tool dia doesn't have to be specified exactly.)
 
-#<x_pos> = #1
-#<y_pos> = #2
-#<z_safe> = #3 (=.05)
-#<depth> = #4 (=-0.1)
-#<diam> = #5
-#<doc_percent> = #6	(=30)
+#<tool> = #1	(0 for use current)
+#<rpm> = #2	(0 for use current)
+#<feed> = #3	(0 for use current)
+#<doc> = #4	(=25 percent z step)
+#<xpos> = #5	(x position)
+#<ypos> = #6	(y position)
+#<diam> = #7	(hole diameter)
+#<zsafe> = #8	(safe height)
+#<zend> = #9	(hole termination)
 
-#<tool_diam> = #5410 (loaded tool diam)
-#<doc> = [100*#<tool_diam>/#<doc>]
 
-#<z_incremental> =[#<z_safe> - #<doc>] (#<z_incremental>  is current depth step)
-g0 z#<z_safe>
+#<doc> = [#5410*#<doc>/100]	(loaded tool diam)
+#<zcurr>=[#<zsafe> - #<doc>] (#<zcurr> is current depth step)
+g0 z#<zsafe>
 (start above and right so we make a convex corner for entry to the ccw arcs)
-g0 x[#<x_pos> + #<doc>] y[#<y_pos> + [#<diam> / 2]] 
-g41 g0 x#<x_pos> y[#<y_pos> + [#<diam> / 2]]
-o101 while [#<z_incremental>  GT #<depth>]
-	(down toward the specified depth a bit at a time)
-	g3 x#<x_pos> y[#<y_pos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<z_incremental> 
-	#<z_incremental> =[#<z_incremental>  - #<doc>]
+g0 x[#<xpos> + #5410] y[#<ypos> + [#<diam> / 2]] 
+g41 g0 x#<xpos> y[#<ypos> + [#<diam> / 2]]
+o101 while [#<zcurr> GT #<zend>]
+(down toward the specified depth a bit at a time)
+g3 x#<xpos> y[#<ypos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<zcurr>
+#<zcurr>=[#<zcurr> - #<doc>]
 o101 endwhile
 (down to the actual depth)
-g3 x#<x_pos> y[#<y_pos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<depth>
+g3 x#<xpos> y[#<ypos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<zend>
 (full circle at the actual depth)
-g3 x#<x_pos> y[#<y_pos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]]
-g0 z#<z_safe>
+g3 x#<xpos> y[#<ypos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]]
+g0 z#<zsafe>
 g40
 o<circlecut> endsub
