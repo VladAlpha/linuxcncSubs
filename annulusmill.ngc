@@ -98,11 +98,11 @@ o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
     G02 I#<rad> Z#<z_curr> P1   (circle plunge)
     G02 I#<rad>                 (finish bottom)
 o<case> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<tool_diam>-#<step>]]] (two pass)
+    G01 X-#<rad>
     G02 I#<rad> Z#<z_curr> P1   (circle plunge)
     G02 I#<rad> P1              (finish bottom)
     G01 X[-#<od>/2]             (move out)
     G03 I[#<od>/2] P2
-    G01 X-#<rad>
 o<case> endif
 
     o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
