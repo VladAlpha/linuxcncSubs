@@ -1,25 +1,53 @@
+(info: helical circle cut)
 o<circlecut> sub
-  (helical hole milling, load tool and set feed first, then use like so:)
-  (o100 call 1[x pos] 2[y pos] 3[safety height] 4[hole depth] 5[hole dia])
-  (tool dia doesn't have to be specified exactly.)
 
-#<tool> = #1	(0 for use current)
-#<rpm> = #2	(0 for use current)
-#<feed> = #3	(0 for use current)
-#<doc> = #4	(=25 percent z step)
-#<xpos> = #5	(x position)
-#<ypos> = #6	(y position)
-#<diam> = #7	(hole diameter)
-#<zsafe> = #8	(safe height)
-#<zend> = #9	(hole termination)
+#<tool> = #1	(=0 Tool | 0 == current)
+#<rot> = #2     (=1 Spindle Rotation 1= CW 2 = CCW)
+#<rpm> = #3	    (=0 RPM | 0 == current)
+#<feed> = #4	(=0 feed | 0 == current)
+#<doc> = #5	    (=25 percent z step)
+#<xpos> = #6	(x position)
+#<ypos> = #7	(y position)
+#<diam> = #8	(hole diameter)
+#<zsafe> = #9	(safe height)
+#<zend> = #10	(hole termination)
+#<orient> = #11 (=1 1 == hole 2 == post)
 
+(o2n error checking)
+    o20 if [#5410 eq 0]
+    (msg, YOU MUST LOAD A NON 0 TOOL: FAIL AT CIRCLECUT)
+    m2
+    o20 endif
+    o22 if [#5410 gt #<diam>]
+    (msg, TOOL TOO LARGE : FAIL AT CIRCLECUT)
+    m2
+    o22 endif
 
+(set machine variables)
+    o<tool> if [#<tool> gt 0]
+        M6 T#<tool> (set desired tool)
+    o<tool> endif
+    o<rpm> if [#<rpm> gt 0 AND #<rot> eq 1]
+        M3 S#<rpm>
+        o<rpm> if [#<rpm> gt 0 AND #<rot> eq 2]
+        M4 S#<rpm>
+    o<rpm> endif
+    o<feed> if [#<feed> gt 0]
+        F#<feed>
+    o<feed> endif
+    
 #<doc> = [#5410*#<doc>/100]	(loaded tool diam)
 #<zcurr>=[#<zsafe> - #<doc>] (#<zcurr> is current depth step)
 g0 z#<zsafe>
 (start above and right so we make a convex corner for entry to the ccw arcs)
+o<manormachine> if [#<orient> eq 1 ]
 g0 x[#<xpos> + #5410] y[#<ypos> + [#<diam> / 2]] 
 g41 g0 x#<xpos> y[#<ypos> + [#<diam> / 2]]
+o<manormachine> if [#<orient> eq 2]
+g0 x[#<xpos> - #5410] y[#<ypos> + [#<diam> / 2]] 
+g42 g0 x#<xpos> y[#<ypos> + [#<diam> / 2]]
+o<manormachine> endif
+
 o101 while [#<zcurr> GT #<zend>]
 (down toward the specified depth a bit at a time)
 g3 x#<xpos> y[#<ypos> + [#<diam> / 2]] i0 j[0 - [#<diam> / 2]] z#<zcurr>

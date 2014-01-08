@@ -39,7 +39,7 @@ o<initialrad> endif
     o10 endif
 (o2n error checking)
     o20 if [#<tool_diam> eq 0]
-    (msg, YOU MUST LOAD A NON 0 TOOL PRIOR TO USING ANNULUS)
+    (msg, YOU MUST LOAD A NON 0 TOOL: FAIL AT ANNULUSMILL)
     m2
     o20 endif
     o21 if [#<id> ge #<od>]
@@ -47,7 +47,7 @@ o<initialrad> endif
     m2
     o21 endif
     o22 if [#<tool_diam> gt [[#<od>-#<id>]/2]]
-    (msg, TOOL TOO LARGE FOR ANNULUS)
+    (msg, TOOL TOO LARGE: FAIL AT ANNULUSMILL)
     m2
     o22 endif
 

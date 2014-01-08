@@ -1,7 +1,7 @@
 (Sub routine by Vlad for tracing the outside of a box)
 (based on one corner and vectors out to next corner, so sign is relative to axis)
 
-o<boxedge> sub
+o<boxcut> sub
 #<xstart> = #1 	(=0.5906: X Corner)
 #<ystart> = #2 	(=-0.6378: Y Corner)
 
@@ -50,4 +50,4 @@ G00 Z#<zsafe>
 
 G40
 
-o<boxedge> endsub
+o<boxcut> endsub
