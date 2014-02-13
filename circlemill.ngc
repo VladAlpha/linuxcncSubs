@@ -6,50 +6,56 @@
 ( 7[z safe] [depth of cut per pass] [stepover percent] [feedrate])
 
 o<circlemill> sub
-#<x> = #1       (=0)
-#<y> = #2       (=0)
-#<id> = #3
-#<od> = #4
-#<z_end> = #5   (=-1: Bottom Z height) 
-#<zstart> = #6 (=.05: height to ramp in from, above material sugg)
-#<z_safe> = #7 (=.1)
-#<doc_p> = #8 (=25 : percent depth per pass)
-#<sop> = #9 (=30 : percent stepover)
-#<feed> = #10 (=24)
-#<finish> = #11 (=4: finish stepover, .010 for .25 tool)
+#<tool> = #1    (=0 Tool | 0 == current)
+#<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
+#<feedtype> = #3 (=0 climb = 1 conv = 2)
+#<rpm> = #4     (=0 RPM | 0 == current)
+#<feed> = #5    (=0 feed | 0 == current)
+#<sop> = #6     (=30 stepover percent)
+#<docp> = #7    (=25 percent z step)
+#<zsafe> = #8   (=0.1 pre/post travel height)
+#<x> = #9    (x position)
+#<y> = #10   (y position)
+#<zstart> = #11 (=0.05 start height of feature)
+#<zend> = #12   (=-1: Bottom Z height) 
+#<od> = #13     (diameter of milled hole)
+#<finish> = #14 (=4: finish stepover, .010 for .25 tool)
 
 #<tool_diam> = #5410
-#<doc> = [#<tool_diam>*#<doc_p>/100]
+#<doc> = [#<tool_diam>*#<docp>/100]
 #<step> = [#<tool_diam>*#<sop>/100]
 #<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
 #<finish> = [#<tool_diam>*#<finish>/100]
 
-(set first rad, note rad is always inteded radius, not current)
-    o<initialrad> if [[#<od>-#<id>] gt [2*[2*#<tool_diam>-#<step>]]] (mooltipass needed)
-    #<rad> = [#<id>/2+#<finish>]            (convenient dim holder for intended pos)
-    o<initialrad> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
-    #<rad> = [#<id>/2]
-    o<initialrad> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<tool_diam>-#<step>]]] (two pass)
-    #<rad> = [#<id>/2]
-o<initialrad> endif
-
+(set or modify or retain machine settings)
+    o30 if [#<tool> gt 0] (set tool)
+        M6 T#<tool>
+        o30 endif
+    o31 if [#<rot> gt 0] (start spindle )
+        M#<rot>
+        o31 endif
+    o33 if [#<rpm> gt 0] (set spindle speed)
+        S#<rpm>
+        o33 endif
+    o34 if [#<feed> gt 0]
+        F#<feed>
+        o34 endif
 (if depth can be done in one pass, reset z_curr)
-    o10 if [#<z_curr> lt #<z_end>]
-    #<z_curr> = #<z_end>
+    o10 if [#<z_curr> lt #<zend>]
+    #<z_curr> = #<zend>
     o10 endif
 (o2n error checking)
     o20 if [#<tool_diam> eq 0]
     (msg, YOU MUST LOAD A NON 0 TOOL: FAIL AT CIRCLEMILL)
     m2
     o20 endif
-    o22 if [#<tool_diam> gt [[#<od>-#<id>]/2]]
+    o22 if [#<tool_diam> gt #<od>]
     (msg, TOOL TOO LARGE: FAIL AT CIRCLEMILL)
     m2
     o22 endif
 
 G40
-F#<feed>            (set feedrate)
-G00 Z#<z_safe>
+G00 Z#<zsafe>
 G00 X#<x> Y#<y>     (go to center)
 G92 X0 Y0           (set temp coordinate around center)
 G00 X[#<tool_diam>/2] (prime for simple leadin 3 oclock park)
@@ -57,8 +63,8 @@ G41 (cut starts inside, left comp CW cutter and CW 02 arc)
 
 G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
 
-o<layers> while [#<z_curr> ge #<z_end>]         (if not too deep)
-o<case> if [[#<od>-#<id>] gt [2*[2*#<tool_diam>-#<step>]]] (mooltipass needed)
+o<layers> while [#<z_curr> ge #<zend>]         (if not too deep)
+o<case> if [#<od> gt [2*[2*#<tool_diam>-#<step>]]] (mooltipass needed)
     G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
     G02 I#<rad>                                  (clean cut)
     G02 X0 Y[#<id>/2] I#<rad> J[[#<id>*#<id>/4-#<rad>*#<rad>]/#<id>]    (arc into inner surface)
@@ -89,11 +95,10 @@ o<case> if [[#<od>-#<id>] gt [2*[2*#<tool_diam>-#<step>]]] (mooltipass needed)
     #<startRad>=#<rad>
     #<rad> = [#<id>/2+#<finish>]              (reset goal rad)
     G02 X-#<rad> Y0 I-[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[2*#<rad>]] J#<startRad>  (go to inner start pos, 6>9)
-
-o<case> elseif [[#<od>-#<id>] eq [#<tool_diam>*2]] (one pass)
+o<case> elseif [#<od> eq [#<tool_diam>*2]] (one pass)
     G02 I#<rad> Z#<z_curr> P1   (circle plunge)
     G02 I#<rad>                 (finish bottom)
-o<case> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<tool_diam>-#<step>]]] (two pass)
+o<case> elseif [#<od> gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<tool_diam>-#<step>]]] (two pass)
     G01 X-#<rad>
     G02 I#<rad> Z#<z_curr> P1   (circle plunge)
     G02 I#<rad> P1              (finish bottom)
@@ -101,16 +106,17 @@ o<case> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<t
     G03 I[#<od>/2] P2
 o<case> endif
 
-    o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
+(set next layer height, if finished sets layer below final height)
+    o<zcontrol> if [[#<z_curr>-#<doc>] gt #<zend>]   (if next cut makes sense but wont finish)
     #<z_curr> = [#<z_curr>-#<doc>]
-    o<zcontrol> elseif [#<z_curr> eq #<z_end>]          (if this cut just finished)
-    #<z_curr> = [#<z_end>-1]    (set excessive to quit)
-    o<zcontrol> elseif [[#<z_curr>-#<doc>] le #<z_end>]   (if next cut finishes or is excessive, force finish)
-    #<z_curr> = #<z_end>
+    o<zcontrol> elseif [#<z_curr> eq #<zend>]          (if this cut just finished)
+    #<z_curr> = [#<zend>-1]    (set excessive to quit)
+    o<zcontrol> elseif [[#<z_curr>-#<doc>] le #<zend>]   (if next cut finishes or is excessive, force finish)
+    #<z_curr> = #<zend>
     o<zcontrol> endif
 o<layers> endwhile
 
-G00 Z#<z_safe>
+G00 Z#<zsafe>
 G00 X#<x> Y#<y>
 G92.1 G40
 o<circlemill> endsub

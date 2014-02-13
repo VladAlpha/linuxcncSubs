@@ -2,7 +2,7 @@
 o<circlecut> sub
 
 #<tool> = #1	(=0 Tool | 0 == current)
-#<rot> = #2     (=1 Spindle Rotation 1= CW 2 = CCW)
+#<rot> = #2     (=1 Spindle Rotation 3= CW 4 = CCW)
 #<rpm> = #3	    (=0 RPM | 0 == current)
 #<feed> = #4	(=0 feed | 0 == current)
 #<doc> = #5	    (=25 percent z step)
