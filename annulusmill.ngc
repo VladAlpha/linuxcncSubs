@@ -105,6 +105,7 @@ o<case> elseif [[#<od>-#<id>] gt [#<tool_diam>*2] AND [#<od>-#<id>] le [2*[2*#<t
     G03 I[#<od>/2] P2
 o<case> endif
 
+(Layer control, sets new desired depth or exceeds Zmin to finish)
     o<zcontrol> if [[#<z_curr>-#<doc>] gt #<z_end>]   (if next cut makes sense but wont finish)
     #<z_curr> = [#<z_curr>-#<doc>]
     o<zcontrol> elseif [#<z_curr> eq #<z_end>]          (if this cut just finished)
