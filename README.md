@@ -11,7 +11,7 @@ Summary of subroutines and files contained within.  Note this readme may not alw
 ====================
 
 In my bizzare brain, the following conventions make sense and are followed as well as possible:
-* MACHINE STATE MUST BE A SIMILAR BEFORE AND AFTER AS POSSIBLE!
+* MACHINE STATE MUST BE AS SIMILAR BEFORE AND AFTER AS POSSIBLE!
     > Passing a 0 to a setting that does not make sense causes it to be ignored
         * tool
         * feedrate
