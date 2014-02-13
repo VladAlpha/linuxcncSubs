@@ -2,16 +2,17 @@
 o<templateSub> sub
 
 #<tool> = #1    (=0 Tool | 0 == current)
-#<rot> = #2     (=0 Spindle Rotation 1= CW 2 = CCW)
+#<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
 #<feedtype> = #3 (=0 climb = 1 conv = 2)
 #<rpm> = #4     (=0 RPM | 0 == current)
 #<feed> = #5    (=0 feed | 0 == current)
 #<doc> = #6     (=25 percent z step)
-#<zsafe> = #7   (=0.1 pre/post travel height)
-#<xpos> = #8    (x position)
-#<ypos> = #9    (y position)
-#<zstart> = #10 (=0 start height of feature)
-#<zend> = #11   ()
+#<finish> = #7  (=10 percent finish stepover)
+#<zsafe> = #8   (=0.1 pre/post travel height)
+#<xpos> = #9    (x position)
+#<ypos> = #10    (y position)
+#<zstart> = #11 (=0 start height of feature)
+#<zend> = #12   (=-1 bottom location)
 
 (o2n error checking)
     o20 if [#5410 eq 0]
@@ -22,5 +23,19 @@ o<templateSub> sub
     (msg, TOOL TOO LARGE : FAIL AT TEMPLATE)
     m2
     o22 endif
+
+(set or modify or retain machine settings)
+    o30 if [#<tool> gt 0] (set tool)
+        M6 T#<tool>
+        o30 endif
+    o31 if [#<rot> gt 0] (start spindle )
+        M#<rot>
+        o31 endif
+    o33 if [#<rpm> gt 0] (set spindle speed)
+        S#<rpm>
+        o33 endif
+    o34 if [#<feed> gt 0]
+        F#<feed>
+        o34 endif
 
 o<templateSub> endsub
