@@ -1,21 +1,54 @@
-(Circular Spiral Pocket)
-#<tooldiam> = #1    (=3.000 tooldiameter)
-#<od> = #2          (=30.000 Diameter)
-#<xpos> = #4        (=15.000 centerX)
-#<ypos> = #5        (=15.000 centerY)
-#<zend> = #6        (=-5.000 Final Depth)
-#<zsafe> = #7       (=2.000  safeZ)
-#<sop> = #8         (=1.35 % stepover)
-#<docp> = #9        (=-2.000 % DOC Z)
-#<zfeed> = #10      (=100.00 feedrateZ)
-#<feed> = #11       (=200.00 feedrateXY)
+(info: Circular Spiral Pocket)
+o<netcirclemill> sub
+======
+#<tool> = #1    (=0 Tool | 0 == current)
+#<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
+#<feedtype> = #3 (=0 climb = 1 conv = 2)
+#<rpm> = #4     (=0 RPM | 0 == current)
+#<feed> = #5    (=0 feed | 0 == current)
+#<doc> = #6     (=25 percent z step)
+#<finish> = #7  (=10 percent finish stepover)
+#<zsafe> = #8   (=0.1 pre/post travel height)
+#<xpos> = #9    (x position)
+#<ypos> = #10    (y position)
+#<zstart> = #11 (=0 start height of feature)
+#<zend> = #12   (=-1 bottom location)
+#<od> = #13          (=30.000 Diameter)
+#<sop> = #14         (=1.35 % stepover)
+#<zfeed> = #15      (=100.00 feedrateZ)
+
+(o2n error checking)
+    o20 if [#5410 eq 0]
+    (msg, YOU MUST LOAD A NON 0 TOOL: FAIL AT TEMPLATE)
+    m2
+    o20 endif
+    o22 if [#5410 gt #<something>] (Test for tool goodness)
+    (msg, TOOL TOO LARGE : FAIL AT TEMPLATE)
+    m2
+    o22 endif
+
+(set or modify or retain machine settings)
+    o30 if [#<tool> gt 0] (set tool)
+        M6 T#<tool>
+        o30 endif
+    o31 if [#<rot> gt 0] (start spindle )
+        M#<rot>
+        o31 endif
+    o33 if [#<rpm> gt 0] (set spindle speed)
+        S#<rpm>
+        o33 endif
+    o34 if [#<feed> gt 0]
+        F#<feed>
+        o34 endif
+
+=====
 (calculate How many times into while)
 #<runs>=FIX[[[#<od>-#<tooldiam>]/#<sop>]/2]
 #<doc> = [#<docp>*#<tooldiam>/100]
 #<sop> = [#<sop>*#<tooldiam>/100]
 
-G0 X#<xpos> Y#<ypos>
 G0 Z#<zsafe>
+G0 X#<xpos> Y#<ypos>
 G1 Z0 F#<zfeed> (Move to Zero Z to start increment Z Cycle)
 O95 while [#<zend> lt 0]
    O97 If [#<zend> lt #<doc>] 
@@ -40,5 +73,5 @@ G3 I[[#<od>/2.0]-[#<tooldiam>/2.0]]
 G1 G90 X#<xpos> Y#<ypos>
 O95 endwhile
 G0 G90 Z#<zsafe>
-M5 
-M30
+
+o<netcirclemill> endsub
