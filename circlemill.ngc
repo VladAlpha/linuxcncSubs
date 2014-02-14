@@ -55,7 +55,7 @@ o<circlemill> sub
 (set plunge radius and initialize rad)
     #<plungerad> = [#<toolrad>+#<step>/2]
     (plunge is larger than finish, set to finish)
-    o<plungeset> if [#<plugerad> gt #<finishrad>]
+    o<plungeset> if [#<plungerad> gt #<finishrad>]
     #<plungerad> = #<finishrad>
     o<plungeset> endif
     #<rad> = #<plungerad>
@@ -71,15 +71,12 @@ G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
 
 o<layers> while [#<z_curr> ge #<zend>]         (if not too deep)
 (plunge down)
-    G02 I#<rad> Z#<z_curr> P1                    (ramp down in and cut circle)
-    G02 I#<rad>                                  (clean cut)
-    G02 X0 Y[#<id>/2] I#<rad> J[[#<id>*#<id>/4-#<rad>*#<rad>]/#<id>]    (arc into inner surface)
-    G02 J-[#<id>/2] P1                              (clean inner surface)
-    #<rad>= [#<rad>+#<tooldiam>]                   (sets rad to uncut wall dim)
-    G00 X0 Y#<rad>                                  (moves to fresh surface 12)
+    G03 I#<rad> Z[#<z_curr>/2] P1                   (ramp down in and cut circle)
+    G03 X0 Y#<rad> I#<rad> Z#<z_curr>               (arc to 12 to reuse next)
+    (no cleanup pass, possible island scenario?)
     #<startRad> = #<rad>                            (save old value to shorten eqs)
     #<rad> = [#<rad>+#<step>]                       (set rad to next pass)
-    
+
     o<expandingbulk> while [#<rad> le [[#<od>/2]-#<finish>]]    (keep pushing out, evals to final not cur dim)
         G03 X-#<rad> Y0 I[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[-2*#<rad>]] J-[#<startRad>]  (arc out to 9)
         G03 X0 Y#<rad> I#<rad>                 (3/4 circle to 12)
@@ -99,8 +96,8 @@ o<layers> while [#<z_curr> ge #<zend>]         (if not too deep)
     o<expandingbulk> endwhile
 
     #<startRad>=#<rad>
-    #<rad> = [#<id>/2+#<finish>]              (reset goal rad)
-    G02 X-#<rad> Y0 I-[[#<rad>*#<rad>-#<startRad>*#<startRad>]/[2*#<rad>]] J#<startRad>  (go to inner start pos, 6>9)
+    #<rad> = [#<plungerad>]              (reset goal rad)
+    G0 X-#<rad> Y0                       (go to inner start pos)
 
 (set next layer height, if finished sets layer below final height)
     o<zcontrol> if [[#<z_curr>-#<doc>] gt #<zend>]   (if next cut makes sense but wont finish)
