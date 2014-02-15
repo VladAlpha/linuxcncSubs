@@ -64,15 +64,14 @@ G40
 G00 Z#<zsafe>
 G00 X#<x> Y#<y>     (go to center)
 G92 X0 Y0           (set temp coordinate around center)
-G00 X[#<tooldiam>/2] (prime for simple leadin 3 oclock park)
+G00 X[#<tooldiam>] (prime for simple leadin 3 oclock park)
 G41 (cut starts inside, left comp CW cutter and CW 02 arc)
 
-G00 X-#<rad> Z#<zstart>                      (lower to 9 start pos, also leadin)
+G00 X0 Y#<rad> Z#<zstart>                      (lower to 12 start pos, also leadin)
 
 o<layers> while [#<z_curr> ge #<zend>]         (if not too deep)
 (plunge down)
-    G03 I#<rad> Z[#<z_curr>/2] P1                   (ramp down in and cut circle)
-    G03 X0 Y#<rad> I#<rad> Z#<z_curr>               (arc to 12 to reuse next)
+    G03 J-#<rad> Z#<z_curr> P3                      (ramp down in and cut circle)
     (no cleanup pass, possible island scenario?)
     #<startRad> = #<rad>                            (save old value to shorten eqs)
     #<rad> = [#<rad>+#<step>]                       (set rad to next pass)
