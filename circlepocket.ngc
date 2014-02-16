@@ -11,37 +11,30 @@
 #<feed>=200.00  (feedrateXY)
 (calculate How many times into while)
 #<loop>=FIX[[[#<diam>-#<tooldiam>]/#<step>]/2]
-(Preamble)
-G17     (XY Plane)
-G21 (Metric) 
-G90 (Absolute) 
-G61 (Exact Path)
-(spiral)
+
 G0 X#<xpos> Y#<ypos>
 G0 Z#<zsafe>
 G1 Z0 F#<feedz> (Move to Zero Z to start increment Z Cycle)
 O95 while [#<zend> lt 0]
-   O97 If [#<zend> lt #<doc>] 
-    G1 G91 Z#<doc> 
-   O97 else
-        G1 G91 Z#<zend>
-   O97 endif
-#<zend>=[#<zend>-#<doc>]
-#<somevar2>=#<step>
-#<somevar3>=1.0
-#<somevar1>=1
-G1 G90 X[#<xpos>+#<somevar2>] F#<feed>
-O10 while [#<somevar1> lt #<loop>]
-G3 X[#<xpos>-[#<somevar1>*#<step>]] I-[[#<somevar3>*#<step>]]
-#<somevar3>=[#<somevar3>+0.5]
-#<somevar1>=[#<somevar1>+1]
-G3 X[#<xpos>+[#<somevar1>*#<step>]] I[[#31*#<step>]]
-#31=[#31+0.5]
-O10 endwhile
-G3 X[#<xpos>-[#<diam>/2.0]+[#<tooldiam>/2.0]] Y#<ypos> I-[[[#<xpos>+[#<somevar1>*#<step>]]-[#<xpos>-[#<diam>/2.0]+[#<tooldiam>/2.0]]]/2.0]
-G3 I[[#<diam>/2.0]-[#<tooldiam>/2.0]]
-G1 G90 X#<xpos> Y#<ypos>
-O95 endwhile
+    O97 If [#<zend> lt #<doc>] 
+     G1 G91 Z#<doc> 
+    O97 else
+     G1 G91 Z#<zend>
+     O97 endif
+    #<zend>=[#<zend>-#<doc>]
+    #<somevar2>=#<step>
+    #<somevar3>=1.0
+    #<somevar1>=1
+    G1 G90 X[#<xpos>+#<somevar2>] F#<feed>
+    O10 while [#<somevar1> lt #<loop>]
+        G3 X[#<xpos>-[#<somevar1>*#<step>]] I-[[#<somevar3>*#<step>]]
+        #<somevar3>=[#<somevar3>+0.5]
+        #<somevar1>=[#<somevar1>+1]
+        G3 X[#<xpos>+[#<somevar1>*#<step>]] I[[#31*#<step>]]
+        #31=[#31+0.5]
+        O10 endwhile
+    G3 X[#<xpos>-[#<diam>/2.0]+[#<tooldiam>/2.0]] Y#<ypos> I-[[[#<xpos>+[#<somevar1>*#<step>]]-[#<xpos>-[#<diam>/2.0]+[#<tooldiam>/2.0]]]/2.0]
+    G3 I[[#<diam>/2.0]-[#<tooldiam>/2.0]]
+    G1 G90 X#<xpos> Y#<ypos>
+    O95 endwhile
 G0 G90 Z#<zsafe>
-M5 
-M30
