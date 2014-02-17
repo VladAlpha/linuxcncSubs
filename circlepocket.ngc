@@ -38,18 +38,18 @@ O95 while [#<zend> lt 0]
      G1 G91 Z#<zend>
      O97 endif
     #<zend>=[#<zend>-#<doc>]
-    #<somevar2>=#<step>
-    #<somevar3>=1.0
-    #<somevar1>=1
-    G1 G90 X[#<xpos>+#<somevar2>] F#<feed>
-    O10 while [#<somevar1> lt #<loop>]
-        G3 X[#<xpos>-[#<somevar1>*#<step>]] I-[[#<somevar3>*#<step>]]
-        #<somevar3>=[#<somevar3>+0.5]
-        #<somevar1>=[#<somevar1>+1]
-        G3 X[#<xpos>+[#<somevar1>*#<step>]] I[[#31*#<step>]]
-        #31=[#31+0.5]
+    #<stepout1>=#<step>
+    #<stepout2>=1.0
+    #<loopcounter>=1
+    G1 G90 X[#<xpos>+#<stepout1>] F#<feed>
+    O10 while [#<loopcounter> lt #<loop>]
+        G3 X[#<xpos>-[#<loopcounter>*#<step>]] I-[[#<stepout2>*#<step>]]
+        #<stepout2>=[#<stepout2>+0.5]
+        #<loopcounter>=[#<loopcounter>+1]
+        G3 X[#<xpos>+[#<loopcounter>*#<step>]] I[[#<stepout2>*#<step>]]
+        #<stepout2>=[#<stepout2>+0.5]
         O10 endwhile
-    G3 X[#<xpos>-#<rad>+#<toolrad>] Y#<ypos> I-[[[#<xpos>+[#<somevar1>*#<step>]]-[#<xpos>-#<rad>+#<toolrad>]]/2.0]
+    G3 X[#<xpos>-#<rad>+#<toolrad>] Y#<ypos> I-[[[#<xpos>+[#<loopcounter>*#<step>]]-[#<xpos>-#<rad>+#<toolrad>]]/2.0]
     G3 I[#<rad>-#<toolrad>]
     G1 G90 X#<xpos> Y#<ypos>
     O95 endwhile
