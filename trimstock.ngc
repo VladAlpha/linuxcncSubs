@@ -1,5 +1,5 @@
 (info:  trim subroutine)
-o<trimSub> sub
+o<trimstock> sub
 
 #<tool> = #1    (=0 Tool | 0 == current)
 #<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
@@ -7,17 +7,17 @@ o<trimSub> sub
 #<rpm> = #4     (=0 RPM | 0 == current)
 #<feed> = #5    (=0 feed | 0 == current)
 #<sop> = #6     (=50 percent stepover)
-#<doc> = #6     (=25 percent z step)
-#<finish> = #7  (=10 percent finish stepover)
-#<zsafe> = #8   (=0.1 pre/post travel height)
-#<xpos> = #9    (=0 x start position)
-#<ypos> = #10   (=0 y start position)
-#<zstart> = #11 (=0 start height of feature)
-#<zend> = #12   (=-1 bottom location)
-#<startangle> = #13     (=90 angle of first side)
-#<endangle> = #14       (=90 angle of second side)
-#<xlength> = #15        (=5 length along x axis)
-#<ylength> = #16        (=1 length along y axis)
+#<dop> = #7     (=25 percent z step)
+#<finish> = #8  (=10 percent finish stepover)
+#<zsafe> = #9   (=0.1 pre/post travel height)
+#<xpos> = #10    (=0 x start position)
+#<ypos> = #11   (=0 y start position)
+#<zstart> = #12 (=0 start height of feature)
+#<zend> = #13   (=-1 bottom location)
+#<startangle> = #14     (=90 angle of first side)
+#<endangle> = #15       (=90 angle of second side)
+#<xlength> = #16        (=5 length along x axis)
+#<ylength> = #17        (=1 length along y axis)
 
 (set or modify or retain machine settings)
     o30 if [#<tool> gt 0] (set tool)
@@ -55,34 +55,38 @@ o<trimSub> sub
     #<passes> = [fup[#<zstart>-#<zend>]/#<doc>]
     #<doc>= [[#<zstart>-#<zend>]/#<passes>]
 
+(msg: doc #<doc>)
 G00 Z#<zsafe>
 G00 X#<x1> Y#<y1>
 G01 Z#<zstart>
 o<firstside> while [#<count> lt #<passes>]
-    G91 G01 Z-#<doc>
+    G91 G01 Z[-#<doc>]
     G90 G01 X#<x2> Y#<y2>
     #<count> = [#<count>+1]
-    o<firstsidenest> while [#<count> lt #<passes>]
-        G91 G01 Z-#<doc>
+    o<firstsidenest> if [#<count> lt #<passes>]
+        G91 G01 Z[-#<doc>]
         G90 G01 X#<x1> Y#<y1>
         #<count> = [#<count>+1]
-    o<firstsidenest> endwhile
+    o<firstsidenest> endif
 o<firstside> endwhile
-G00 #<zsafe>
-G00 #<x3> #<y3>
-G00 #<zstart>
+G00 Z#<zsafe>
+G00 X#<x3> Y#<y3>
+M0  (pause just in case)
+G00 Z#<zstart>
+
+#<count> = 0
 
 o<secondside> while [#<count> lt #<passes>]
-    G91 G01 Z-#<doc>
+    G91 G01 Z[-#<doc>]
     G90 G01 X#<x4> Y#<y4>
     #<count> = [#<count>+1]
-    o<secondsidenest> while [#<count> lt #<passes>]
-        G91 G01 Z-#<doc>
+    o<secondsidenest> if [#<count> lt #<passes>]
+        G91 G01 Z[-#<doc>]
         G90 G01 X#<x3> Y#<y3>
         #<count> = [#<count>+1]
-    o<secondsidenest> endwhile
+    o<secondsidenest> endif
 o<secondside> endwhile
-G00 #<zsafe>
+G00 Z#<zsafe>
 
 
-o<trimSub> endsub
+o<trimstock> endsub
