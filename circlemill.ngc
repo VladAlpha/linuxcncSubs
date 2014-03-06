@@ -5,26 +5,18 @@
 o<circlemill> sub
 #<tool> = #1    (=0 Tool | 0 == current)
 #<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
-#<feedtype> = #3 (=0 climb = 1 conv = 2)
+#<feedtype> = #3 (=0 climb = 1 conv = 2 NONWORKING)
 #<rpm> = #4     (=0 RPM | 0 == current)
 #<feed> = #5    (=0 feed | 0 == current)
 #<sop> = #6     (=30 stepover percent)
 #<docp> = #7    (=25 percent z step)
 #<zsafe> = #8   (=0.1 pre/post travel height)
-#<x> = #9    (x position)
-#<y> = #10   (y position)
+#<x> = #9       (=0 x position)
+#<y> = #10      (=0 y position)
 #<zstart> = #11 (=0.05 start height of feature)
 #<zend> = #12   (=-1: Bottom Z height) 
 #<od> = #13     (diameter of milled hole)
 #<finish> = #14 (=4: finish stepover, .010 for .25 tool)
-
-#<tooldiam> = #5410
-#<toolrad> = [#5410/2]
-#<doc> = [#<tooldiam>*#<docp>/100]
-#<step> = [#<tooldiam>*#<sop>/100]
-#<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
-#<finish> = [#<tooldiam>*#<finish>/100] (finish cut depth)
-#<finishrad> = [[#<od>-2*#<finish>]/2]  (rad of hole prior to finish)
 
 (set or modify or retain machine settings)
     o30 if [#<tool> gt 0] (set tool)
@@ -39,6 +31,14 @@ o<circlemill> sub
     o34 if [#<feed> gt 0]
         F#<feed>
         o34 endif
+#<tooldiam> = #5410
+#<toolrad> = [#5410/2]
+#<doc> = [#<tooldiam>*#<docp>/100]
+#<step> = [#<tooldiam>*#<sop>/100]
+#<z_curr> = [#<zstart>-#<doc>]  (convenient var for Z height)
+#<finish> = [#<tooldiam>*#<finish>/100] (finish cut depth)
+#<finishrad> = [[#<od>-2*#<finish>]/2]  (rad of hole prior to finish)
+
 (if depth can be done in one pass, reset z_curr)
     o10 if [#<z_curr> lt #<zend>]
     #<z_curr> = #<zend>
@@ -63,6 +63,9 @@ o<circlemill> sub
 G40
 G00 Z#<zsafe>
 G00 X#<x> Y#<y>     (go to center)
+#<xcenter>=#5420    (offsets to remove G92)
+#<ycenter>=#5421
+
 G92 X0 Y0           (set temp coordinate around center)
 G00 X[#<tooldiam>] (prime for simple leadin 3 oclock park)
 G41 (cut starts inside, left comp CW cutter and CW 02 arc)

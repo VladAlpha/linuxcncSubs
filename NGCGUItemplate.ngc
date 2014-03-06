@@ -7,7 +7,7 @@ o<templateSub> sub
 #<rpm> = #4     (=0 RPM | 0 == current)
 #<feed> = #5    (=0 feed | 0 == current)
 #<sop> = #6     (=50 percent stepover)
-#<doc> = #6     (=25 percent z step)
+#<dop> = #6     (=25 percent z step)
 #<finish> = #7  (=10 percent finish stepover)
 #<zsafe> = #8   (=0.1 pre/post travel height)
 #<xpos> = #9    (x position)
@@ -34,12 +34,15 @@ o<templateSub> sub
     m2
     o20 endif
     o22 if [#5410 gt #<something>] (Test for tool goodness)
-    (msg, TOOL TOO LARGE : FAIL AT TEMPLATE)
+    (msg, TOOL TOO WICKED : FAIL AT TEMPLATE)
     m2
     o22 endif
 (usefull common variable set)
     #<tooldiam> = #5410
     #<toolrad> = [#5410/2]
     #<step> = [#<tooldiam>*#<sop>/100]
+    #<doc> = [#<tooldiam>*#<dop>/100]
+    #<passes> = [fup[#<zstart>-#<zend>]/#<doc>]
+    #<optdoc> = [[#<zstart>-#<zend>]/#<passes>]
 
 o<templateSub> endsub

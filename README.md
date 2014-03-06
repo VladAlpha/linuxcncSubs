@@ -35,6 +35,8 @@ annulusmill.ngc : will incrementally mill an annulus (doughnut) starting from Z 
 
 boxcut: simply creates a box edge of the dimensions given.  Any corner can be used with proper sign for edge length.  will likely be renamed boxcut to match my convention.
 
+trimstock: takes a first corner, closest to origin, and a raw stock width in Y and part length in X, and both angles measured to the right of the edge, and will trim/true up part in one pass.
+
 ===========================
 ******    TO DO     *******
 ===========================
