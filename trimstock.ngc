@@ -41,7 +41,7 @@ o<trimstock> sub
     #<tooldiam> = #5410
     #<toolrad> = [#5410/2]
     #<step> = [#<tooldiam>*#<sop>/100]
-    #<doc> = [#<tooldiam>*#<dop>/100]
+    #<doc> = [#<tooldiam>*#<dop>/100]   (debug, initial doc = #<doc>)
     #<x1> = [#<xpos>-#<toolrad>-#<toolrad>/tan[#<startangle>]]
     #<y1> = [#<ypos>-#<toolrad>]
     #<x2> = [#<xpos>-#<toolrad>+[#<toolrad>+#<ylength>]/tan[#<startangle>]]
@@ -52,8 +52,8 @@ o<trimstock> sub
     #<y4> = #<y1>
 
     #<count> = 0
-    #<passes> = [fup[#<zstart>-#<zend>]/#<doc>]
-    #<doc>= [[#<zstart>-#<zend>]/#<passes>]
+    #<passes> = fup[[#<zstart>-#<zend>]/#<doc>] (debug, passes = #<passes>)
+    #<doc>= [[#<zstart>-#<zend>]/#<passes>]   (debug, doc = #<doc>)
 
 (msg: doc #<doc>)
 G00 Z#<zsafe>
