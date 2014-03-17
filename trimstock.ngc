@@ -7,7 +7,7 @@ o<trimstock> sub
 #<rpm> = #4     (=0 RPM | 0 == current)
 #<feed> = #5    (=0 feed | 0 == current)
 #<sop> = #6     (=50 percent stepover)
-#<dop> = #7     (=25 percent z step)
+#<dop> = #7     (=75 percent z step)
 #<finish> = #8  (=10 percent finish stepover)
 #<zsafe> = #9   (=0.1 pre/post travel height)
 #<xpos> = #10    (=0 x start position)
@@ -41,21 +41,36 @@ o<trimstock> sub
     #<tooldiam> = #5410
     #<toolrad> = [#5410/2]
     #<step> = [#<tooldiam>*#<sop>/100]
-    #<doc> = [#<tooldiam>*#<dop>/100]   (debug, initial doc = #<doc>)
-    #<x1> = [#<xpos>-#<toolrad>-#<toolrad>/tan[#<startangle>]]
+    #<doc> = [#<tooldiam>*#<dop>/100]
+    #<m1> = [tan[#<startangle>]]
+    #<b1a> = [#<ypos>-[#<xpos>*tan[#<startangle>]]] (eq of stock B term)
+    #<b1b> = [[#<toolrad>]*sqrt[#<m1>**2+1]+#<b1a>] (eq of cut b term)
+    #<m2> = [tan[#<endangle>]]
+    #<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
+    #<b2b> = [[-#<toolrad>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
+
     #<y1> = [#<ypos>-#<toolrad>]
-    #<x2> = [#<xpos>-#<toolrad>+[#<toolrad>+#<ylength>]/tan[#<startangle>]]
+    (debug, y1 = #<y1>)
+    #<x1> = [[#<y1>-#<b1b>]/#<m1>]
+    (debug, x1 = #<x1>)
     #<y2> = [#<ypos>+#<ylength>+#<toolrad>]
-    #<x3> = [#<xpos>+#<xlength>+#<toolrad>+[#<toolrad>+#<ylength>]/tan[#<endangle>]]
+    (debug, y2 = #<y2>)
+    #<x2> = [[#<y2>-#<b1b>]/#<m1>]
+    (debug, x2 = #<x2>)
     #<y3> = [#<y2>]
-    #<x4> = [#<xpos>+#<xlength>+#<toolrad>-#<toolrad>/tan[#<endangle>]]
+    (debug, y3 = #<y3>)
+    #<x3> = [#<y3>-#<b2b>/#<m2>]
+    (debug, x3 = #<x3>)
     #<y4> = #<y1>
+    (debug, y4 = #<y4>)
+    #<x4> = [#<y4>-#<b2b>/#<m2>]
+    (debug, x4 = #<x4>)
 
+    
     #<count> = 0
-    #<passes> = fup[[#<zstart>-#<zend>]/#<doc>] (debug, passes = #<passes>)
-    #<doc>= [[#<zstart>-#<zend>]/#<passes>]   (debug, doc = #<doc>)
+    #<passes> = fup[[#<zstart>-#<zend>]/#<doc>]
+    #<doc>= [[#<zstart>-#<zend>]/#<passes>]
 
-(msg: doc #<doc>)
 G00 Z#<zsafe>
 G00 X#<x1> Y#<y1>
 G01 Z#<zstart>
@@ -71,7 +86,7 @@ o<firstside> while [#<count> lt #<passes>]
 o<firstside> endwhile
 G00 Z#<zsafe>
 G00 X#<x3> Y#<y3>
-M0  (pause just in case)
+M1  (pause just in case)
 G00 Z#<zstart>
 
 #<count> = 0
