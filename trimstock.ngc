@@ -43,11 +43,13 @@ o<trimstock> sub
     #<step> = [#<tooldiam>*#<sop>/100]
     #<doc> = [#<tooldiam>*#<dop>/100]
     #<m1> = [tan[#<startangle>]]
+    #<d1> = [#<toolrad>*#<m1>/[sqrt[#<m1>**2]]]
     #<b1a> = [#<ypos>-[#<xpos>*tan[#<startangle>]]] (eq of stock B term)
-    #<b1b> = [[#<toolrad>]*sqrt[#<m1>**2+1]+#<b1a>] (eq of cut b term)
+    #<b1b> = [[#<d1>]*sqrt[#<m1>**2+1]+#<b1a>] (eq of cut b term)
     #<m2> = [tan[#<endangle>]]
+    #<d2> = [-#<toolrad>*#<m2>/[sqrt[#<m2>**2]]]
     #<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
-    #<b2b> = [[-#<toolrad>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
+    #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
 
     #<y1> = [#<ypos>-#<toolrad>]
     (debug, y1 = #<y1>)
