@@ -54,7 +54,7 @@ o<trimstock> sub
     #<m2> = [tan[#<endangle>]]
     #<d2> = [-#<toolrad>*#<m2>/[sqrt[#<m2>**2]]]
     #<d2> = [[#<xrawlength>-#<xlength>]/sin[#<endangle>]]
-    #<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
+    #<b2a> = [#<ypos>-[#<xpos>+#<xlength>+#<xrawlength>]*#<m2>]
     #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>]
     
     #<chipdist> = [[#<xrawlength>-#<xlength>]/sin[#<endangle>]-#<finish>]
@@ -63,22 +63,13 @@ o<trimstock> sub
     
 
     #<y1> = [#<ypos>-#<toolrad>]
-    (debug, y1 = #<y1>)
     #<x1> = [[#<y1>-#<b1b>]/#<m1>]
-    (debug, x1 = #<x1>)
     #<y2> = [#<ypos>+#<ylength>+#<toolrad>]
-    (debug, y2 = #<y2>)
     #<x2> = [[#<y2>-#<b1b>]/#<m1>]
-    (debug, x2 = #<x2>)
     #<y3> = [#<y2>]
-    (debug, y3 = #<y3>)
     #<x3> = [#<y3>-#<b2b>/#<m2>]
-    (debug, x3 = #<x3>)
     #<y4> = #<y1>
-    (debug, y4 = #<y4>)
     #<x4> = [#<y4>-#<b2b>/#<m2>]
-    (debug, x4 = #<x4>)
-
     
     #<count> = 0
 
