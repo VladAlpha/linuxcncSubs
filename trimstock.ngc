@@ -18,6 +18,7 @@ o<trimstock> sub
 #<endangle> = #15       (=90 angle of second side)
 #<xlength> = #16        (=5 length along x axis)
 #<ylength> = #17        (=1 length along y axis)
+#<xrawlength> = #18     (=5.5 actual length)
 
 (set or modify or retain machine settings)
     o30 if [#<tool> gt 0] (set tool)
@@ -41,15 +42,25 @@ o<trimstock> sub
     #<tooldiam> = #5410
     #<toolrad> = [#5410/2]
     #<step> = [#<tooldiam>*#<sop>/100]
+    #<finish> = [#<tooldiam>*#<finish>/100]
     #<doc> = [#<tooldiam>*#<dop>/100]
+    #<passes> = fup[[#<zstart>-#<zend>]/#<doc>]
+    #<doc>= [[#<zstart>-#<zend>]/#<passes>]
+
     #<m1> = [tan[#<startangle>]]
     #<d1> = [#<toolrad>*#<m1>/[sqrt[#<m1>**2]]]
     #<b1a> = [#<ypos>-[#<xpos>*tan[#<startangle>]]] (eq of stock B term)
     #<b1b> = [[#<d1>]*sqrt[#<m1>**2+1]+#<b1a>] (eq of cut b term)
     #<m2> = [tan[#<endangle>]]
     #<d2> = [-#<toolrad>*#<m2>/[sqrt[#<m2>**2]]]
+    #<d2> = [[#<xrawlength>-#<xlength>]/sin[#<endangle>]]
     #<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
-    #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
+    #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>]
+    
+    #<chipdist> = [[#<xrawlength>-#<xlength>]/sin[#<endangle>]-#<finish>]
+    #<roughpasses> = fup[[#<chipdist>]/#<step>]
+    #<step>= [[#<chipdist>]/#<roughpasses>]
+    
 
     #<y1> = [#<ypos>-#<toolrad>]
     (debug, y1 = #<y1>)
@@ -70,8 +81,6 @@ o<trimstock> sub
 
     
     #<count> = 0
-    #<passes> = fup[[#<zstart>-#<zend>]/#<doc>]
-    #<doc>= [[#<zstart>-#<zend>]/#<passes>]
 
 G00 Z#<zsafe>
 G00 X#<x1> Y#<y1>
@@ -92,18 +101,50 @@ M1  (pause just in case)
 G00 Z#<zstart>
 
 #<count> = 0
+#<roughcount> = 0
 
-o<secondside> while [#<count> lt #<passes>]
+o<roughdown> while [#<roughcount> lt #<roughpasses>]
+    o<secondside> while [#<count> lt #<passes>]
+        G91 G01 Z[-#<doc>]
+        G90 G01 X#<x4> Y#<y4>
+        #<count> = [#<count>+1]
+        o<secondsidenest> if [#<count> lt #<passes>]
+            G91 G01 Z[-#<doc>]
+            G90 G01 X#<x3> Y#<y3>
+            #<count> = [#<count>+1]
+        o<secondsidenest> endif
+    o<secondside> endwhile
+    G00 Z#<zstart>
+    #<roughcount> = [#<roughcount>+1]
+    #<d2> = [-#<toolrad>*#<m2>/[sqrt[#<m2>**2]]-#<step>*#<roughcount>]
+    #<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
+    #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
+    #<y3> = [#<y2>]
+    #<x3> = [#<y3>-#<b2b>/#<m2>]
+    #<y4> = #<y1>
+    #<x4> = [#<y4>-#<b2b>/#<m2>]
+o<roughdown> endwhile
+G00 Z#<zstart>
+
+#<d2> = [[#<xrawlength>-#<xlength>]/sin[#<endangle>]]
+#<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
+#<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>]
+#<y3> = [#<y2>]
+#<x3> = [#<y3>-#<b2b>/#<m2>]
+#<y4> = #<y1>
+#<x4> = [#<y4>-#<b2b>/#<m2>]
+
+#<count> = 0
+o<secondsidefinal> while [#<count> lt #<passes>]
     G91 G01 Z[-#<doc>]
     G90 G01 X#<x4> Y#<y4>
     #<count> = [#<count>+1]
-    o<secondsidenest> if [#<count> lt #<passes>]
+    o<secondsidenestfinal> if [#<count> lt #<passes>]
         G91 G01 Z[-#<doc>]
         G90 G01 X#<x3> Y#<y3>
         #<count> = [#<count>+1]
-    o<secondsidenest> endif
-o<secondside> endwhile
+    o<secondsidenestfinal> endif
+o<secondsidefinal> endwhile
 G00 Z#<zsafe>
-
 
 o<trimstock> endsub
