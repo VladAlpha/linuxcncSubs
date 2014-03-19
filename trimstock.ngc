@@ -47,31 +47,27 @@ o<trimstock> sub
     #<passes> = fup[[#<zstart>-#<zend>]/#<doc>]
     #<doc>= [[#<zstart>-#<zend>]/#<passes>]
 
+    #<chipdist> = [[#<xrawlength>-#<xlength>]*sin[#<endangle>]-#<finish>]
+    #<roughpasses> = fup[[#<chipdist>]/#<step>]
+    #<step>= [#<chipdist>/#<roughpasses>]
+
     #<m1> = [tan[#<startangle>]]
     #<d1> = [#<toolrad>*#<m1>/[sqrt[#<m1>**2]]]
     #<b1a> = [#<ypos>-[#<xpos>*tan[#<startangle>]]] (eq of stock B term)
     #<b1b> = [[#<d1>]*sqrt[#<m1>**2+1]+#<b1a>] (eq of cut b term)
     #<m2> = [tan[#<endangle>]]
-    #<d2> = [-[#<toolrad>+[#<xrawlength>-#<xlength>]*sin[#<endangle>]]*#<m2>/[sqrt[#<m2>**2]]]
+    #<d2> = [-[#<toolrad>+[#<xrawlength>-#<xlength>-#<step>]*sin[#<endangle>]]*#<m2>/[sqrt[#<m2>**2]]]
     #<b2a> = [#<ypos>-[#<xpos>+#<xlength>]*#<m2>]
     #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>]
-    (debug, m2 #<m2>)
-    (debug, b2a #<b2a>)
-    (debug, b2b #<b2b>)
-
-    #<chipdist> = [[#<xrawlength>-#<xlength>]*sin[#<endangle>]-#<finish>]
-    #<roughpasses> = fup[[#<chipdist>]/#<step>]
-    #<step>= [[#<chipdist>]/#<roughpasses>]
-    
 
     #<y1> = [#<ypos>-#<toolrad>]
     #<x1> = [[#<y1>-#<b1b>]/#<m1>]
     #<y2> = [#<ypos>+#<ylength>+#<toolrad>]
     #<x2> = [[#<y2>-#<b1b>]/#<m1>]
     #<y3> = #<y2>
-    #<x3> = [#<y3>-#<b2b>/#<m2>]
+    #<x3> = [[#<y3>-#<b2b>]/#<m2>]
     #<y4> = #<y1>
-    #<x4> = [#<y4>-#<b2b>/#<m2>]
+    #<x4> = [[#<y4>-#<b2b>]/#<m2>]
     
     #<count> = 0
 
@@ -110,21 +106,22 @@ o<roughdown> while [#<roughcount> lt #<roughpasses>]
     #<count> = 0
     G00 Z#<zstart>
     #<roughcount> = [#<roughcount>+1]
-    #<d2> = [#<d2>+#<step>*#<roughcount>*#<m2>/[sqrt[#<m2>**2]]]
+    #<d2> = [#<d2>+#<step>*#<m2>/[sqrt[#<m2>**2]]]
     #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
     #<y3> = [#<y2>]
-    #<x3> = [#<y3>-#<b2b>/#<m2>]
+    #<x3> = [[#<y3>-#<b2b>]/#<m2>]
     #<y4> = #<y1>
-    #<x4> = [#<y4>-#<b2b>/#<m2>]
+    #<x4> = [[#<y4>-#<b2b>]/#<m2>]
+
 o<roughdown> endwhile
 G00 Z#<zstart>
 
 #<d2> = [-#<toolrad>*#<m2>/[sqrt[#<m2>**2]]]
 #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>]
 #<y3> = [#<y2>]
-#<x3> = [#<y3>-#<b2b>/#<m2>]
+#<x3> = [[#<y3>-#<b2b>]/#<m2>]
 #<y4> = #<y1>
-#<x4> = [#<y4>-#<b2b>/#<m2>]
+#<x4> = [[#<y4>-#<b2b>]/#<m2>]
 
 #<count> = 0
 o<secondsidefinal> while [#<count> lt #<passes>]
