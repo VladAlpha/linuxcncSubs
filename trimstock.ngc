@@ -1,4 +1,4 @@
-(info:  trim subroutine)
+(info:  Trims ends of stock to desired angles)
 o<trimstock> sub
 
 #<tool> = #1    (=0 Tool | 0 == current)
