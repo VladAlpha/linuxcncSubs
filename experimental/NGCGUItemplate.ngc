@@ -42,7 +42,7 @@ o<templateSub> sub
     #<toolrad> = [#5410/2]
     #<step> = [#<tooldiam>*#<sop>/100]
     #<doc> = [#<tooldiam>*#<dop>/100]
-    #<passes> = [fup[#<zstart>-#<zend>]/#<doc>]
+    #<passes> = [fup[[#<zstart>-#<zend>]/#<doc>]]
     #<optdoc> = [[#<zstart>-#<zend>]/#<passes>]
 
 o<templateSub> endsub
