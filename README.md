@@ -63,3 +63,5 @@ boxcut
 
 * may not always cut to full depth?
 * trim stock can not handle negative length for Y, will not clear edge of material
+* trimstock occasionally does not always cut hte first cut parallel afteer re-setting Z hiehgt on the second side, iow if there is an even number of passess, the first pass will go from DOC=0 to DoC=doc which could cause rubbing, and the second pass will be extra deep at hte end.  still trying to come up w/ an effecient fix
+*
