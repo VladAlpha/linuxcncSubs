@@ -104,7 +104,7 @@ o<roughdown> while [#<roughcount> lt #<roughpasses>]
         o<secondsidenest> endif
     o<secondside> endwhile
     #<count> = 0
-    G00 Z#<zstart>
+    G00 Z#<zstart> X#<x4> Y#<y4>    (goes up and diag if needed, otherwise only up) 
     #<roughcount> = [#<roughcount>+1]
     #<d2> = [#<d2>+#<step>*#<m2>/[sqrt[#<m2>**2]]]
     #<b2b> = [[#<d2>]*sqrt[#<m2>**2+1]+#<b2a>] (eq of cut b term)
