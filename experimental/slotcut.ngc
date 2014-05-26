@@ -1,42 +1,80 @@
+(info: simple slot cut routine)
 o<slotcut> sub
   (slot cutting, load tool and set feed first, then use like so:)
-  (1[x1] 2[y1] 3[x2] 4[y2] #5[width] 6[depth] 7[safety height] 8[tool dia])
+  (1[x1] 2[y1] 3[x2] 4[y2] #5[width] 6[depth] 7[safety height] 8[doc])
 
-#<x1> = #1
-#<y1> = #2
-#<x2> = #3
-#<y2> = #4
-#<width> = #5
-#<depth> = #6 (=-0.5)
-#<z_safe> = #7
-#<> = #
+#<tool> = #1    (=0 Tool | 0 == current)
+#<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
+#<feedtype> = #3 (=0 climb = 1 conv = 2)
+#<rpm> = #4     (=0 RPM | 0 == current)
+#<feed> = #5    (=0 feed | 0 == current)
+#<dop> = #6     (=25 percent z step)
+#<zsafe> = #7   (=0.1 pre/post travel height)
+#<xpos> = #8    (x position)
+#<ypos> = #9    (y position)
+#<zstart> = #10 (=0 start height of feature)
+#<zend> = #11   (=-1 bottom location)
+#<x1> = #12     (x1)
+#<y1> = #13     (y1)
+#<x2> = #14     (x2)
+#<y2> = #15     (y2)
+#<width> = #16  (width)
 
-#10=[#<width>/2] (radius)
-#11=[[atan [#<y2>-#<y1>]/[#<x2>-#1]] + 180] ("backward" direction)
-#12=[#11 + 90] ("right" side direction)
-#13=[#10 * [cos [#11]]]
-#14=[#10 * [sin [#11]]]
-#15=[#10 * [cos [#12]]]
-#16=[#10 * [sin [#12]]]
+(set or modify or retain machine settings)
+    o30 if [#<tool> gt 0] (set tool)
+        M6 T#<tool>
+        o30 endif
+    o31 if [#<rot> gt 0] (start spindle )
+        M#<rot>
+        o31 endif
+    o33 if [#<rpm> gt 0] (set spindle speed)
+        S#<rpm>
+        o33 endif
+    o34 if [#<feed> gt 0]
+        F#<feed>
+        o34 endif
+(o2n error checking)
+    o20 if [#5410 eq 0]
+    (msg, YOU MUST LOAD A NON 0 TOOL: FAIL AT SLOTCUT)
+    m2
+    o20 endif
+    o22 if [#5410 gt #<width>] (Test for tool goodness)
+    (msg, TOOL TOO LARGE : FAIL AT SLOTCUT)
+    m2
+    o22 endif
+(usefull common variable set)
+    #<tooldiam> = #5410
+    #<toolrad> = [#5410/2]
+    #<doc> = [#<tooldiam>*#<dop>/100]
+    #<passes> = [fup[#<zstart>-#<zend>]/#<doc>]
+    #<optdoc> = [[#<zstart>-#<zend>]/#<passes>]
+
+
+#<slotrad>=[#<width>/2] (radius)
+#<slotvar1>=[[atan [#<y2>-#<y1>]/[#<x2>-#<x1>]] + 180] ("backward" direction)
+#<slotvar2>=[#<slotvar1> + 90] ("right" side direction)
+#<slotvar3>=[#<slotrad> * [cos [#<slotvar1>]]]
+#<slotvar4>=[#<slotrad> * [sin [#<slotvar1>]]]
+#<slotvar5>=[#<slotrad> * [cos [#<slotvar2>]]]
+#<slotvar6>=[#<slotrad> * [sin [#<slotvar2>]]]
 g0 z#<z_safe>
-g0 x[#1+#13+#15] y[#<y1>+#14+#16]
-g41 g0x[#1+#15] y[#<y1>+#16]
-#17=[#8/2] (depth per cut is half tool dia)
-#18=[#<z_safe>-#17] (z)
+g0 x[#<x1>+#<slotvar3>+#<slotvar5>] y[#<y1>+#<slotvar4>+#<slotvar6>]
+g41 g0x[#<x1>+#<slotvar5>] y[#<y1>+#<slotvar6>]
+#<zpos>=[#<z_safe>-#<doc>] (z)
 (down toward the specified depth a bit at a time)
-o201 while [#18 GT #<depth>]
-g1 x[#<x2>+#15] y[#<y2>+#16] z#18
-g3 x[#<x2>-#15] y[#<y2>-#16] r#10
-g1 x[#1-#15] y[#<y1>-#16]
-g3 x[#1+#15] y[#<y1>+#16] r#10
-#18=[#18-#17]
+o201 while [#<zpos> GT #<zend>]
+g1 x[#<x2>+#<slotvar5>] y[#<y2>+#<slotvar6>] z#<zpos>
+g3 x[#<x2>-#<slotvar5>] y[#<y2>-#<slotvar6>] r#<slotrad>
+g1 x[#<x1>-#<slotvar5>] y[#<y1>-#<slotvar6>] z[#<zpos>-#<doc>/2]
+g3 x[#<x1>+#<slotvar5>] y[#<y1>+#<slotvar6>] r#<slotrad>
+#<zpos>=[#<zpos>-#<doc>/2]
 o201 endwhile
 (down to the actual depth and one more cut)
-g1 x[#<x2>+#15] y[#<y2>+#16] z#<depth>
-g3 x[#<x2>-#15] y[#<y2>-#16] r#10
-g1 x[#1-#15] y[#<y1>-#16]
-g3 x[#1+#15] y[#<y1>+#16] r#10
-g1 x[#<x2>+#15] y[#<y2>+#16]
+g1 x[#<x2>+#<slotvar5>] y[#<y2>+#<slotvar6>] z#<zend>
+g3 x[#<x2>-#<slotvar5>] y[#<y2>-#<slotvar6>] r#<slotrad>
+g1 x[#<x1>-#<slotvar5>] y[#<y1>-#<slotvar6>]
+g3 x[#<x1>+#<slotvar5>] y[#<y1>+#<slotvar6>] r#<slotrad>
+g1 x[#<x2>+#<slotvar5>] y[#<y2>+#<slotvar6>]
 g0 z#<z_safe>
 g40
 o<slotcut> endsub
