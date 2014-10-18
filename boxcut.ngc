@@ -1,30 +1,65 @@
 (Sub routine by Vlad for tracing the outside of a box)
 (based on one corner and vectors out to next corner, so sign is relative to axis)
+(note the locations and vectors are based on the true corners, ie X of sides)
+(not the center of the radiused corners, IE a rectangle with and without radiused)
+(corners has the same vectors and start location)
 
 o<boxcut> sub
-#<xstart> = #1 	(=0.5906: X Corner)
-#<ystart> = #2 	(=-0.6378: Y Corner)
+#<tool> = #1    (=0 Tool | 0 == current)
+#<rot> = #2     (=0 Spindle Rotation 3= CW 4 = CCW)
+#<feedtype> = #3 (=0 climb = 1 conv = 2)
+#<rpm> = #4     (=0 RPM | 0 == current)
+#<feed> = #5    (=0 feed | 0 == current)
+#<sop> = #6     (=50 UNUSED)
+#<dop> = #7     (=25 percent z step)
+#<finish> = #8  (=10 percent finish stepover)
+#<zsafe> = #9   (=0.1 pre/post travel height)
+#<xpos> = #10    (x position)
+#<ypos> = #11    (y position)
+#<zstart> = #12 (=0 start height of feature)
+#<zend> = #13   (=-1 bottom location)
 
-#<xvect> = #3 	(=3.937: X Length)
-#<yvect> = #4	(=0.1969: Y Length) 
 
-#<zsafe> = #5 	(=0.1: Z safe height)
-#<zstart> = #6 	(=0.05: Height of Start of Cut)
-#<zend> = #7 	(=-0.2: Final Z Height)
-#<doc> = #8		(=40: % Tool Diam Cut Depth)
-#<feed> = #9 	(Feedrate)
+#<tooldiam> = #5410
+#<toolrad> = [#5410/2]
+
+#<xvect> = #14 	(=3.937: X Length)
+#<yvect> = #15	(=0.1969: Y Length) 
 
 #<orient> = #10 (=1 1 pocket 2 block)
+#<cornerradius> = #11 (=0 corner radius, 0 disables)
 
-#<xend> = [#<xstart>+#<xvect>]
-#<yend> = [#<ystart>+#<yvect>]
-#<doc> = [#5410*#<doc>/100]
-#<zcuts> = [fix[[#<zstart>-#<zend>]/#<doc>]]
+#<xend> = [#<xpos>+#<xvect>]
+#<yend> = [#<ypos>+#<yvect>]
+#<xsign> = [#<xvect>/abs[#<xvect>]] (get sign of vectors for radius)
+#<ysign> = [#<yvect>/abs[#<yvect>]]
+#<doc> = [#<tooldiam>*#<dop>/100]
+#<passes> = [fup[[#<zstart>-#<zend>]/#<doc>]]
+#<doc> = [[#<zstart>-#<zend>]/#<passes>] (set doc to optimised value)
 F#<feed>
+
+(set or modify or retain machine settings)
+    o30 if [#<tool> gt 0] (set tool)
+        M6 T#<tool>
+        o30 endif
+    o31 if [#<rot> gt 0] (start spindle )
+        M#<rot>
+        o31 endif
+    o33 if [#<rpm> gt 0] (set spindle speed)
+        S#<rpm>
+        o33 endif
+    o34 if [#<feed> gt 0]
+        F#<feed>
+        o34 endif
+(o2n error checking)
+    o20 if [#5410 eq 0]
+    (msg, YOU MUST LOAD A NON 0 TOOL: FAIL AT TEMPLATE)
+    m2
+    o20 endif
 
 G40
 G00 Z#<zsafe>
-G00 X[#<xstart>-#5410] y#<ystart>
+G00 X[#<xpos>-#5410] y#<ypos>
 
 o<set> if [#<orient> eq 1]
 G41
@@ -33,19 +68,20 @@ G42
 o<set> endif
 
 #<zgo> = #<zstart>
-G01 Z#<zstart> X#<xstart>
+G01 Z#<zstart> X#<xpos>
 
-o<rampdown> repeat [#<zcuts>]
+
+o<rampdown> repeat [#<passes>]
 #<zgo> =[ #<zgo>-#<doc>]
 G01 Y#<yend> Z[#<zgo>]
 G01 X#<xend>
-G01 Y[#<ystart>]
-G01 X[#<xstart>]
+G01 Y[#<ypos>]
+G01 X[#<xpos>]
 #<zstart> =[ #<zgo>]
 o<rampdown> endrepeat
 
 G01 Y#<yend>
-G01 X[#<xstart>+#5410]
+G01 X[#<xpos>+#5410]
 G00 Z#<zsafe>
 
 G40
