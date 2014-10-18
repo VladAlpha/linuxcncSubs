@@ -56,7 +56,7 @@ F#<feed>
 
 G40
 G00 Z#<zsafe>
-G00 X[#<xpos>-#5410] y#<ypos>
+G00 X[#<xpos>-#5410*#<xsign>] y#<ypos>
 
 o<set> if [#<orient> eq 1]
     o<quad> if [#<xsign>+#<ysign> eq 0]
@@ -73,7 +73,7 @@ o<set> elseif [#<orient> eq 2]
 o<set> endif
 
 #<zgo> = #<zstart>
-G01 Z#<zstart> X[#<xpos>*#<xsign>]
+G01 Z#<zstart> X#<xpos>
 
 o<nofillet> if [#<radius> eq 0]
     o<rampdown> repeat [#<passes>+1]
