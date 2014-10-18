@@ -100,8 +100,10 @@ o<fillet> if [#<radius> gt 0]
 
         o<rotdir> if [#<xsign>+#<ysign> eq 0]   (this covers 2 of 4 cases CW)
             o<reset> if [#<orient> eq 1]
+                G40
                 G42
                 o<reset> if [#<orient> eq 2]
+                G40
                 G41
             o<reset> endif
             
@@ -116,8 +118,10 @@ o<fillet> if [#<radius> gt 0]
             G02 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
         o<rotdir> else                          (CCW path direction)
             o<reset> if [#<orient> eq 1]
+                G40
                 G41
                 o<reset> if [#<orient> eq 2]
+                G40
                 G42
             o<reset> endif
             G01 X#<xsstart> Y#<ypos>
