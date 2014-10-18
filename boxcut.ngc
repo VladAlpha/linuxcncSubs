@@ -35,6 +35,20 @@ o<boxcut> sub
 #<doc> = [[#<zstart>-#<zend>]/#<passes>] (set doc to optimised value)
 F#<feed>
 
+o<set> if [#<orient> eq 1]
+    o<quad> if [#<xsign>+#<ysign> eq 0]
+        G41
+    o<quad> else
+        G42
+    o<quad> endif
+o<set> elseif [#<orient> eq 2]
+    o<quad> if [#<xsign>+#<ysign> eq 0]
+        G42
+    o<quad> else
+        G41
+    o<quad> endif
+o<set> endif
+
 (set or modify or retain machine settings)
     o30 if [#<tool> gt 0] (set tool)
         M6 T#<tool>
@@ -57,12 +71,6 @@ F#<feed>
 G40
 G00 Z#<zsafe>
 G00 X[#<xpos>-#5410] y#<ypos>
-
-o<set> if [#<orient> eq 1]
-G41
-o<set> if [#<orient> eq 2]
-G42
-o<set> endif
 
 #<zgo> = #<zstart>
 G01 Z#<zstart> X#<xpos>
@@ -99,13 +107,6 @@ o<fillet> if [#<radius> gt 0]
         o<finishpass> endif
 
         o<rotdir> if [#<xsign>+#<ysign> eq 0]   (this covers 2 of 4 cases CW)
-            o<reset> if [#<orient> eq 1]
-                G40
-                G42
-                o<reset> if [#<orient> eq 2]
-                G40
-                G41
-            o<reset> endif
             
             G01 X#<xsstart> Y#<ypos>
             G01 X#<xsend> Z#<zgo> (end of first straight less radius)
@@ -117,13 +118,6 @@ o<fillet> if [#<radius> gt 0]
             G01 Y#<ysstart>                                 (last straight)
             G02 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
         o<rotdir> else                          (CCW path direction)
-            o<reset> if [#<orient> eq 1]
-                G40
-                G41
-                o<reset> if [#<orient> eq 2]
-                G40
-                G42
-            o<reset> endif
             G01 X#<xsstart> Y#<ypos>
             G01 X#<xsend> Z#<zgo> (end of first straight less radius)
             G03 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
