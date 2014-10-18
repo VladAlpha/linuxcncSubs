@@ -59,9 +59,9 @@ G00 Z#<zsafe>
 G00 X[#<xpos>-#5410] y#<ypos>
 
 o<set> if [#<orient> eq 1]
-G42
-o<set> if [#<orient> eq 2]
 G41
+o<set> if [#<orient> eq 2]
+G42
 o<set> endif
 
 #<zgo> = #<zstart>
@@ -77,8 +77,8 @@ o<nofillet> if [#<radius> eq 0]
         #<zstart> =[ #<zgo>]
     o<rampdown> endrepeat
 
-    G01 Y#<yend>
-    G01 X[#<xpos>+#5410]
+    G01 X#<xend>
+    G01 Y[#<ypos>+#5410/2]
 o<nofillet> endif
 
 o<fillet> if [#<radius> gt 0]
