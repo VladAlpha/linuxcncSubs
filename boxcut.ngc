@@ -35,20 +35,6 @@ o<boxcut> sub
 #<doc> = [[#<zstart>-#<zend>]/#<passes>] (set doc to optimised value)
 F#<feed>
 
-o<set> if [#<orient> eq 1]
-    o<quad> if [#<xsign>+#<ysign> eq 0]
-        G41
-    o<quad> else
-        G42
-    o<quad> endif
-o<set> elseif [#<orient> eq 2]
-    o<quad> if [#<xsign>+#<ysign> eq 0]
-        G42
-    o<quad> else
-        G41
-    o<quad> endif
-o<set> endif
-
 (set or modify or retain machine settings)
     o30 if [#<tool> gt 0] (set tool)
         M6 T#<tool>
@@ -71,6 +57,20 @@ o<set> endif
 G40
 G00 Z#<zsafe>
 G00 X[#<xpos>-#5410] y#<ypos>
+
+o<set> if [#<orient> eq 1]
+    o<quad> if [#<xsign>+#<ysign> eq 0]
+        G41
+    o<quad> else
+        G42
+    o<quad> endif
+o<set> elseif [#<orient> eq 2]
+    o<quad> if [#<xsign>+#<ysign> eq 0]
+        G42
+    o<quad> else
+        G41
+    o<quad> endif
+o<set> endif
 
 #<zgo> = #<zstart>
 G01 Z#<zstart> X#<xpos>
