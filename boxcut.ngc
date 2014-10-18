@@ -84,43 +84,54 @@ o<nofillet> if [#<radius> eq 0]
 o<nofillet> endif
 
 o<fillet> if [#<radius> gt 0]
-o<filletRampdown> repeat [#<passes>+1]
-    #<ysvect> = [#<yvect>-2*#<radius>]
-    #<xsvect> = [#<xvect>-2*#<radius>]
-    #<xsstart> = [#<xpos>+[#<xsign>*#<radius>]] (straight segment start)
-    #<xsend> = [#<xend>-[#<xsign>*#<radius>]]
-    #<ysstart> = [#<ypos>+[#<ysign>*#<radius>]] (straight segment start)
-    #<ysend> = [#<yend>-[#<ysign>*#<radius>]]
- 
-    #<zgo> = [#<zgo>-#<doc>]
-    o<finishpass> if [#<zgo> lt #<zend>]
-        #<zgo>=#<zend>
-    o<finishpass> endif
 
-    o<rotdir> if [#<xsign>+#<ysign> eq 0]   (this covers 2 of 4 cases CW)
-        
-        G01 X#<xsstart> Y#<ypos>
-        G01 X#<xsend> Z#<zgo> (end of first straight less radius)
-        G02 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
-        G01 Y#<ysend>
-        G02 x#<xsend> Y#<yend> I[-#<radius>*#<xsign>]   (second corner)
-        G01 x#<xsstart>
-        G02 X#<xpos> Y#<ysend> J[-#<radius>*#<ysign>]   (third corner)
-        G01 Y#<ysstart>                                 (last straight)
-        G02 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
-    o<rotdir> else                          (CCW path direction)
-        G01 X#<xsstart> Y#<ypos>
-        G01 X#<xsend> Z#<zgo> (end of first straight less radius)
-        G03 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
-        G01 Y#<ysend>
-        G03 x#<xsend> Y#<yend> I[-#<radius>*#<xsign>]   (second corner)
-        G01 x#<xsstart>
-        G03 X#<xpos> Y#<ysend> J[-#<radius>*#<ysign>]   (third corner)
-        G01 Y#<ysstart>                                 (last straight)
-        G03 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
-    o<rotdir> endif
-o<filletRampdown> endrepeat
-        G01 X[#<xsend>-#<toolrad>*#<xsign>]  (finish)
+    o<filletRampdown> repeat [#<passes>+1]
+        #<ysvect> = [#<yvect>-2*#<radius>]
+        #<xsvect> = [#<xvect>-2*#<radius>]
+        #<xsstart> = [#<xpos>+[#<xsign>*#<radius>]] (straight segment start)
+        #<xsend> = [#<xend>-[#<xsign>*#<radius>]]
+        #<ysstart> = [#<ypos>+[#<ysign>*#<radius>]] (straight segment start)
+        #<ysend> = [#<yend>-[#<ysign>*#<radius>]]
+     
+        #<zgo> = [#<zgo>-#<doc>]
+        o<finishpass> if [#<zgo> lt #<zend>]
+            #<zgo>=#<zend>
+        o<finishpass> endif
+
+        o<rotdir> if [#<xsign>+#<ysign> eq 0]   (this covers 2 of 4 cases CW)
+            o<reset> if [#<orient> eq 1]
+                G42
+                o<reset> if [#<orient> eq 2]
+                G41
+            o<reset> endif
+            
+            G01 X#<xsstart> Y#<ypos>
+            G01 X#<xsend> Z#<zgo> (end of first straight less radius)
+            G02 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
+            G01 Y#<ysend>
+            G02 x#<xsend> Y#<yend> I[-#<radius>*#<xsign>]   (second corner)
+            G01 x#<xsstart>
+            G02 X#<xpos> Y#<ysend> J[-#<radius>*#<ysign>]   (third corner)
+            G01 Y#<ysstart>                                 (last straight)
+            G02 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
+        o<rotdir> else                          (CCW path direction)
+            o<reset> if [#<orient> eq 1]
+                G41
+                o<reset> if [#<orient> eq 2]
+                G42
+            o<reset> endif
+            G01 X#<xsstart> Y#<ypos>
+            G01 X#<xsend> Z#<zgo> (end of first straight less radius)
+            G03 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
+            G01 Y#<ysend>
+            G03 x#<xsend> Y#<yend> I[-#<radius>*#<xsign>]   (second corner)
+            G01 x#<xsstart>
+            G03 X#<xpos> Y#<ysend> J[-#<radius>*#<ysign>]   (third corner)
+            G01 Y#<ysstart>                                 (last straight)
+            G03 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
+        o<rotdir> endif
+    o<filletRampdown> endrepeat
+    G01 X[#<xsend>-#<toolrad>*#<xsign>]  (finish)
 o<fillet> endif
 
 G00 Z#<zsafe>
