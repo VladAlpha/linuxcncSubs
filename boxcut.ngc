@@ -14,12 +14,12 @@ o<boxcut> sub
 #<dop> = #7     (=25 percent z step)
 #<finish> = #8  (=10 percent finish stepover)
 #<zsafe> = #9   (=0.1 pre/post travel height)
-#<xpos> = #10    (x position)
-#<ypos> = #11    (y position)
+#<xpos> = #10   (=0 x position)
+#<ypos> = #11   (=0 y position)
 #<zstart> = #12 (=0 start height of feature)
 #<zend> = #13   (=-1 bottom location)
-#<xvect> = #14 	(=3.937: X Length)
-#<yvect> = #15	(=0.1969: Y Length) 
+#<xvect> = #14 	(=1.1024: X Length)
+#<yvect> = #15	(=1.3386: Y Length) 
 #<orient> = #16 (=1 1 pocket 2 block)
 #<radius> = #17 (=0 corner radius, 0 disables)
 
@@ -68,13 +68,15 @@ o<set> endif
 G01 Z#<zstart> X#<xpos>
 
 o<nofillet> if [#<radius> eq 0]
-    o<rampdown> repeat [#<passes>]
+    o<rampdown> repeat [#<passes>+1]
         #<zgo> =[ #<zgo>-#<doc>]
+        o<finishpass> if [#<zgo> lt #<zend>]
+            #<zgo>=#<zend>
+        o<finishpass> endif
         G01 X#<xend> Z[#<zgo>]
         G01 Y#<yend>
         G01 X#<xpos>
         G01 Y#<ypos>
-        #<zstart> =[ #<zgo>]
     o<rampdown> endrepeat
 
     G01 X#<xend>
@@ -82,7 +84,7 @@ o<nofillet> if [#<radius> eq 0]
 o<nofillet> endif
 
 o<fillet> if [#<radius> gt 0]
-o<filletRampdown> repeat [#<passes>]
+o<filletRampdown> repeat [#<passes>+1]
     #<ysvect> = [#<yvect>-2*#<radius>]
     #<xsvect> = [#<xvect>-2*#<radius>]
     #<xsstart> = [#<xpos>+[#<xsign>*#<radius>]] (straight segment start)
@@ -91,6 +93,9 @@ o<filletRampdown> repeat [#<passes>]
     #<ysend> = [#<yend>-[#<ysign>*#<radius>]]
  
     #<zgo> = [#<zgo>-#<doc>]
+    o<finishpass> if [#<zgo> lt #<zend>]
+        #<zgo>=#<zend>
+    o<finishpass> endif
 
     o<rotdir> if [#<xsign>+#<ysign> eq 0]   (this covers 2 of 4 cases CW)
         
