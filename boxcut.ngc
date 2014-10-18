@@ -73,7 +73,7 @@ o<set> elseif [#<orient> eq 2]
 o<set> endif
 
 #<zgo> = #<zstart>
-G01 Z#<zstart> X#<xpos>
+G01 Z#<zstart> X[#<xpos>*#<xsign>]
 
 o<nofillet> if [#<radius> eq 0]
     o<rampdown> repeat [#<passes>+1]
