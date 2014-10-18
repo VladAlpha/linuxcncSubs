@@ -94,8 +94,8 @@ o<filletRampdown> repeat [#<passes>]
 
     o<rotdir> if [#<xsign>+#<ysign> eq 0]   (this covers 2 of 4 cases CW)
         
-        G01 X#<xsstart> Y#<ypos> Z#<zgo>
-        G01 X#<xsend> (end of first straight less radius)
+        G01 X#<xsstart> Y#<ypos>
+        G01 X#<xsend> Z#<zgo> (end of first straight less radius)
         G02 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
         G01 Y#<ysend>
         G02 x#<xsend> Y#<yend> I[-#<radius>*#<xsign>]   (second corner)
@@ -104,8 +104,8 @@ o<filletRampdown> repeat [#<passes>]
         G01 Y#<ysstart>                                 (last straight)
         G02 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
     o<rotdir> else                          (CCW path direction)
-        G01 X#<xsstart> Y#<ypos> Z#<zgo>
-        G01 X#<xsend> (end of first straight less radius)
+        G01 X#<xsstart> Y#<ypos>
+        G01 X#<xsend> Z#<zgo> (end of first straight less radius)
         G03 X#<xend> Y#<ysstart> J[#<radius>*#<ysign>]    (first corner)
         G01 Y#<ysend>
         G03 x#<xsend> Y#<yend> I[-#<radius>*#<xsign>]   (second corner)
