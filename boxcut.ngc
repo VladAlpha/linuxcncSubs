@@ -59,9 +59,9 @@ G00 Z#<zsafe>
 G00 X[#<xpos>-#5410] y#<ypos>
 
 o<set> if [#<orient> eq 1]
-G41
-o<set> if [#<orient> eq 2]
 G42
+o<set> if [#<orient> eq 2]
+G41
 o<set> endif
 
 #<zgo> = #<zstart>
