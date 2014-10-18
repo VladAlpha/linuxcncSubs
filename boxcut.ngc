@@ -60,15 +60,15 @@ G00 X[#<xpos>-#5410*#<xsign>] y#<ypos>
 
 o<set> if [#<orient> eq 1]
     o<quad> if [#<xsign>+#<ysign> eq 0]
-        G41
-    o<quad> else
         G42
+    o<quad> else
+        G41
     o<quad> endif
 o<set> elseif [#<orient> eq 2]
     o<quad> if [#<xsign>+#<ysign> eq 0]
-        G42
-    o<quad> else
         G41
+    o<quad> else
+        G42
     o<quad> endif
 o<set> endif
 
