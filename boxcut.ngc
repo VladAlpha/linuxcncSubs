@@ -70,10 +70,10 @@ G01 Z#<zstart> X#<xpos>
 o<nofillet> if [#<radius> eq 0]
     o<rampdown> repeat [#<passes>]
         #<zgo> =[ #<zgo>-#<doc>]
-        G01 Y#<yend> Z[#<zgo>]
-        G01 X#<xend>
-        G01 Y[#<ypos>]
-        G01 X[#<xpos>]
+        G01 X#<xend> Z[#<zgo>]
+        G01 Y#<yend>
+        G01 X#<xpos>
+        G01 Y#<ypos>
         #<zstart> =[ #<zgo>]
     o<rampdown> endrepeat
 
