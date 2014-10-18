@@ -88,7 +88,7 @@ o<nofillet> if [#<radius> eq 0]
     o<rampdown> endrepeat
 
     G01 X#<xend>
-    G01 Y[#<ypos>+#5410/2]
+    G01 Y[#<ypos>+#<ysign>*#5410/2]
 o<nofillet> endif
 
 o<fillet> if [#<radius> gt 0]
