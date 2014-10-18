@@ -114,6 +114,7 @@ o<filletRampdown> repeat [#<passes>]
         G01 Y#<ysstart>                                 (last straight)
         G03 X#<xsstart> Y#<ypos> I[#<radius>*#<xsign>]  (4th corner)
     o<rotdir> endif
+o<filletRampdown> endrepeat
 o<fillet> endif
 
 G00 Z#<zsafe>
